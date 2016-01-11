@@ -47,21 +47,26 @@ var socket;
                     console.log(event.data);
                     console.log('______________________________________________________________________________');
 
-
                     //TODO: Order the list acording to user usage (history), also filter by blacklist
-                    var list = JSON.parse(event.data).payload.completions.map(function(e){
-    		    var printName = e.name
-                        var compoundName = e.name 
-                        if(e.typeSig.sections.length > 0){
-    			printName+='()'; 
-                            var lst = e.typeSig.sections[0].map(function(x){return x[0]+':'+x[1] })
-                            compoundName += '(' + lst.join(", ") + ')';
-                        }
-                        compoundName += ' :' + e.typeSig.result;
-                        return {value: e.name, caption: compoundName, score: e.relevance};
-                    });
+                    var jsonData = JSON.parse(event.data)
 
-        		    callback(null, list);			
+                    if(jsonData.payload.typehint=='CompletionInfoList'){
+                       var list = jsonData.payload.completions.map(function(e){
+                            var printName = e.name
+                            var compoundName = e.name 
+                            if(e.typeSig.sections.length > 0){
+                                printName+='()'; 
+                                var lst = e.typeSig.sections[0].map(function(x){return x[0]+':'+x[1] })
+                                compoundName += '(' + lst.join(", ") + ')';
+                            }
+                            compoundName += ' :' + e.typeSig.result;
+                            return {value: e.name, caption: compoundName, score: e.relevance};
+                        });
+
+                        callback(null, list);            
+                    }
+
+                    
         	        //TODO: Close socket on exit actually
         	        //socket.close();
         	    };
@@ -129,6 +134,10 @@ var socket;
         		        }); 
         		}
     	    });
+
+            server.stderr.on('data', function(data){
+                console.log(`stderr: ${data}`);
+            });
         });
         
     	gensime.stdout.on('data', function(data) {
