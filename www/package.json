@@ -1,0 +1,11 @@
+{
+  "name": "ScalaZen",
+  "description": "Super Cool ThreeJS With Scala Goodiness",
+  "version": "0.0.2",
+  "main": "index.html",
+  "window": {
+    "toolbar": true,
+    "width": 1024,
+    "height": 700
+  }
+}
