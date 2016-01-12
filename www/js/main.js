@@ -4,13 +4,25 @@ var wrench = require('wrench');
 var path = require('path');
 var exec = require('child_process').exec;
 
-require('nw.gui').Window.get().showDevTools();
+var win = require('nw.gui').Window.get();
+win.showDevTools();
+
 
 $( document ).ready( function(){
 var callId = 0;
 
 var socket;
+var server; 
 
+win.on('close', function() {
+    // Hide the window to give user the feeling of closing immediately
+    this.hide();
+    if (typeof socket !== 'undefined') {
+        socket.close();
+    }
+    server.kill('SIGKILL');
+    this.close(true);
+});
 
     var langTools = ace.require("ace/ext/language_tools");
     var editor = ace.edit("editor");
@@ -110,7 +122,7 @@ var socket;
         //Start Ensime Server per Sketch (Its ugly, I know)        
         
         var gensime = exec("cd "+newName+" && sbt gen-ensime", function (error, stdout, stderr) {
-            var server = exec("../ensime "+ path.resolve(newName) + '/.ensime', function (error2, stdout2, stderr2) {});
+            server = exec("../ensime "+ path.resolve(newName) + '/.ensime', function (error2, stdout2, stderr2) {});
     	    server.stdout.on('data', function(data) {
           		console.log(`stdout: ${data}`);
         		
@@ -128,7 +140,7 @@ var socket;
         		            };
 
         		            socket.onclose = function () {
-        		                alert('Lost connection!');
+        		                console.log('Lost ensime server connection!');
         		            };
 
         		        }); 
@@ -158,16 +170,19 @@ var socket;
     $('#compile').click(function() {
         fs.writeFile(newName+myApp, editor.getValue());
         var exec = require('child_process').exec;
-        var proc = exec("cd "+newName+" && sbt clean compile fastOptJS", function(error, stdout, stderr){
-            alert(error + ' ' + stdout + ' ' + stderr);
+        var proc = exec("cd "+newName+" && sbt clean compile fastOptJS", function(error, stdout, stderr){});
+        proc.stdout.on('data', function(data){
+            console.log(`stdout: ${data}`);
+        });
+        proc.stderr.on('data', function(data){
+            console.log(`stderr: ${data}`);
         });
     });
     
    
     $('#preview').click(function() {
         var exec = require('child_process').exec;
-        alert("x-www-browser "+newName+"index.html")
-        var proc2 = exec("x-www-browser "+newName+"/index.html");     
+        var proc2 = exec("x-www-browser "+newName+"/index.html");
     });
 });
                                     

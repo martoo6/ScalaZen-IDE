@@ -24,3 +24,5 @@ project/plugins/project/
 .classpath
 .project
 .settings/
+nwjs-v0.12.3-linux-x64/
+ensime-server/
