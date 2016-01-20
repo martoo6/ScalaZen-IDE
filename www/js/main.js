@@ -96,13 +96,21 @@ win.on('close', function() {
     var newSketchName;
     var myApp = '/src/main/scala/ThreeJSApp.scala';
     
-    $('#home').click(function() {
+    $('#home-btn').click(function() {
 	//Escondo y desactivo todo lo demas
             $('#main-menu').children().removeClass("active");
             $('#content').children().hide();
             //Muestro lo que quiero
-            $('#code-editor').hide();
-	    $('#main-menu').addClass("active");
+	        $('#main-menu').addClass("active");
+    });
+
+    $('#gallery-btn').click(function() {
+        //Escondo y desactivo todo lo demas
+        $('#main-menu').children().removeClass("active");
+        $('#content').children().hide();
+        //Muestro lo que quiero
+        $('#gallery-btn').addClass("active");
+        $('#gallery').show(500);
     });
 
     $('#create-sketch').click(function() {
@@ -122,50 +130,57 @@ win.on('close', function() {
         //Start Ensime Server per Sketch (Its ugly, I know)        
         
         var gensime = exec("cd "+newName+" && sbt gen-ensime", function (error, stdout, stderr) {
-            server = exec("../ensime "+ path.resolve(newName) + '/.ensime', function (error2, stdout2, stderr2) {});
-    	    server.stdout.on('data', function(data) {
-          		console.log(`stdout: ${data}`);
-        		
-        		//Means, server is ready for action
-        		if(data.indexOf('Setting up new file watchers') > -1){
-        			fs.readFile(path.resolve(newName) + '/.ensime_cache/http',function (err, data) {
-        		            //Open Websockets for compile/autocomplete/etc
-        		            socket = new WebSocket('ws://127.0.0.1:' + data.toString() + '/jerky');
-
-        		            socket.onopen = function () {
-        		                //Show options when conected to server
-        		                $('#compile-actions').children().show(500);
-        		                $('#compile-progress-bar').hide();
-        		                socket.send(JSON.stringify({"callId" : 0,"req" : {"typehint":"ConnectionInfoReq"}}));
-        		            };
-
-        		            socket.onclose = function () {
-        		                console.log('Lost ensime server connection!');
-        		            };
-
-        		        }); 
-        		}
-    	    });
-
-            server.stderr.on('data', function(data){
-                console.log(`stderr: ${data}`);
-            });
+            loadSketch(newName);
         });
         
     	gensime.stdout.on('data', function(data) {
       		console.log(`stdout: ${data}`);
     	});
            
+        showCodeEditor();
 
-        //Escondo y desactivo todo lo demas
+    });
+    
+    function showCodeEditor(){
+            //Escondo y desactivo todo lo demas
         $('#main-menu').children().removeClass("active");
         $('#content').children().hide();
         //Muestro lo que quiero
         $('#code-editor').show(500);
         $('#new-sketch').addClass("active");
         $('#new-sketch-modal').modal('hide');
-    });
-    
+    }
+
+    function loadSketch(sketchName){
+        server = exec("../ensime "+ sketchName + '/.ensime', function (error2, stdout2, stderr2) {});
+            server.stdout.on('data', function(data) {
+                console.log(`stdout: ${data}`);
+                
+                //Means, server is ready for action
+                if(data.indexOf('Setting up new file watchers') > -1){
+                    fs.readFile(sketchName + '/.ensime_cache/http',function (err, data) {
+                            //Open Websockets for compile/autocomplete/etc
+                            socket = new WebSocket('ws://127.0.0.1:' + data.toString() + '/jerky');
+
+                            socket.onopen = function () {
+                                //Show options when conected to server
+                                $('#compile-actions').children().show(500);
+                                $('#compile-progress-bar').hide();
+                                socket.send(JSON.stringify({"callId" : 0,"req" : {"typehint":"ConnectionInfoReq"}}));
+                            };
+
+                            socket.onclose = function () {
+                                console.log('Lost ensime server connection!');
+                            };
+
+                        }); 
+                }
+            });
+
+            server.stderr.on('data', function(data){
+                console.log(`stderr: ${data}`);
+            });
+    }
 
     $('#compile').click(function() {
         fs.writeFile(newName+myApp, editor.getValue());
@@ -184,6 +199,27 @@ win.on('close', function() {
         var exec = require('child_process').exec;
         var proc2 = exec("x-www-browser "+newName+"/index.html");
     });
+
+
+    fs.readdir('../sketches', function(err, folders){
+
+        folders.filter(function(f){return fs.statSync('../sketches/'+f).isDirectory();})
+               .forEach(function(folder){
+                    var li = $('#grid').append('<li><a href=""><img src="https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg">'+ folder +'</a></li>');
+                    li.click(function(){
+                        loadSketch('../sketches/'+folder);
+                        showCodeEditor();
+                    });
+                });
+
+
+        new AnimOnScroll( document.getElementById( 'grid' ), {
+            minDuration : 0.4,
+            maxDuration : 0.7,
+            viewportFactor : 0.2
+        });
+    });
+
 });
                                     
                                     
