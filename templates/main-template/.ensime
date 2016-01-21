@@ -1,0 +1,22 @@
+(
+ :root-dir "/home/martin/Downloads/ScalaZen/templates/main-template"
+ :cache-dir "/home/martin/Downloads/ScalaZen/templates/main-template/.ensime_cache"
+ :name "t2"
+ :java-home "/usr/lib/jvm/java-7-oracle"
+ :java-flags ("-XX:MaxPermSize=256m" "-XX:ReservedCodeCacheSize=128m" "-Xms1024m" "-Xmx1024m" "-Xss2m")
+ :reference-source-roots ("/usr/lib/jvm/java-7-oracle/src.zip")
+ :scala-version "2.11.2"
+ :compiler-args ("-Xfuture" "-Xlint" "-Xplugin:/home/martin/.ivy2/cache/org.scala-lang.modules.scalajs/scalajs-compiler_2.11.2/jars/scalajs-compiler_2.11.2-0.5.5.jar" "-Yinline-warnings" "-Yno-adapted-args" "-Ywarn-dead-code" "-Ywarn-numeric-widen" "-Ywarn-unused-import" "-deprecation" "-feature")
+ :formatting-prefs nil
+ :subprojects ((
+   :name "t2"
+   :source-roots ("/home/martin/Downloads/ScalaZen/templates/main-template/src/main/java" "/home/martin/Downloads/ScalaZen/templates/main-template/src/main/scala" "/home/martin/Downloads/ScalaZen/templates/main-template/src/test/java" "/home/martin/Downloads/ScalaZen/templates/main-template/src/test/scala")
+   :targets ("/home/martin/Downloads/ScalaZen/templates/main-template/target/scala-2.11/classes")
+   :test-targets ("/home/martin/Downloads/ScalaZen/templates/main-template/target/scala-2.11/test-classes")
+   :depends-on-modules nil
+   :compile-deps ("/home/martin/.ivy2/cache/org.scala-lang.modules.scalajs/scalajs-dom_sjs0.5_2.11/jars/scalajs-dom_sjs0.5_2.11-0.6.jar" "/home/martin/.ivy2/cache/org.scala-lang.modules.scalajs/scalajs-library_2.11/jars/scalajs-library_2.11-0.5.5.jar" "/home/martin/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.11.2.jar")
+   :runtime-deps nil
+   :test-deps nil
+   :doc-jars ("/home/martin/.ivy2/cache/org.scala-lang.modules.scalajs/scalajs-dom_sjs0.5_2.11/docs/scalajs-dom_sjs0.5_2.11-0.6-javadoc.jar" "/home/martin/.ivy2/cache/org.scala-lang.modules.scalajs/scalajs-library_2.11/docs/scalajs-library_2.11-0.5.5-javadoc.jar" "/home/martin/.ivy2/cache/org.scala-lang/scala-library/docs/scala-library-2.11.2-javadoc.jar" "/home/martin/Downloads/ScalaZen/templates/main-template/target/scala-2.11/scalajs_template_sjs0.5_2.11-1.0-javadoc.jar")
+   :reference-source-roots ("/home/martin/.ivy2/cache/org.scala-lang.modules.scalajs/scalajs-dom_sjs0.5_2.11/srcs/scalajs-dom_sjs0.5_2.11-0.6-sources.jar" "/home/martin/.ivy2/cache/org.scala-lang.modules.scalajs/scalajs-library_2.11/srcs/scalajs-library_2.11-0.5.5-sources.jar" "/home/martin/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.11.2-sources.jar")))
+)

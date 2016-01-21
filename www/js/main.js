@@ -102,40 +102,84 @@ win.on('close', function() {
             $('#content').children().hide();
             //Muestro lo que quiero
             $('#code-editor').hide();
-	    $('#main-menu').addClass("active");
+	        $('#main-menu').addClass("active");
     });
 
+    var prevCount=1;
+
     $('#create-sketch').click(function() {
+        
+        //Pretty graphics
+        $('#compile-progress-bar').hide();
+        $('#compile-actions').children().hide();
+        $('#preview-progress-bar').show();
+
+        //Important Stuff
         newSketchName = $('#new-sketch-name').val();
         newName = '../sketches/'+newSketchName;
         wrench.copyDirSyncRecursive('../templates/main-template', newName);
 
-        $('#compile-actions').children().hide();
-        $('#compile-progress-bar').show();
+        
 
         console.log("File Name to Read: "+newName+myApp);
         fs.readFile(newName+myApp,function (err, data) {
             editor.setValue(data.toString());
+
+            var proc = exec("cd "+newName+" && sbt ~fastOptJS", function(error, stdout, stderr){});
+            proc.stdout.on('data', function(data){
+                console.log(`stdout: ${data}`);
+
+                if(data.indexOf(prevCount+". Waiting for source changes...") > -1){
+                    exec("x-www-browser "+newName+"/index.html");
+                    $('#preview').show(500);
+                    $('#compile-progress-bar').hide(500);
+                }
+            });
+            proc.stderr.on('data', function(data){
+                console.log(`stderr: ${data}`);
+            });
         });    
             
 
         //Start Ensime Server per Sketch (Its ugly, I know)        
         
-        var gensime = exec("cd "+newName+" && sbt gen-ensime", function (error, stdout, stderr) {
+        //var gensime = exec("cd "+newName+" && sbt gen-ensime", function (error, stdout, stderr) {
+        
+        
+            alert(path.resolve(newName) + '/.ensime');
+
+        fs.readFile(path.resolve(newName) + '/.ensime',function (err, data) {
+
+            //g repalces all instances
+            //a-zA-Z0-9- Letter, number, and symbol -
+            
+            var newData = data.toString().replace(/templates\/[a-zA-Z0-9-]*\//g, "sketches/"+newName+"/")
+                                        .replace(/templates\/[a-zA-Z0-9-]*\"/g, "sketches/"+newName+"\"");
+
+
+            alert("sketches/"+newName);
+            alert(newData);
+
+            fs.writeFileSync(path.resolve(newName) + '/.ensime', newData);
+
             server = exec("../ensime "+ path.resolve(newName) + '/.ensime', function (error2, stdout2, stderr2) {});
-    	    server.stdout.on('data', function(data) {
-          		console.log(`stdout: ${data}`);
+    	    server.stdout.on('data', function(serverData) {
+          	
+                console.log(`stdout: ${serverData}`);
         		
         		//Means, server is ready for action
-        		if(data.indexOf('Setting up new file watchers') > -1){
-        			fs.readFile(path.resolve(newName) + '/.ensime_cache/http',function (err, data) {
+        		if(serverData.indexOf('Setting up new file watchers') > -1){
+        			fs.readFile(path.resolve(newName) + '/.ensime_cache/http',function (err, fileData) {
         		            //Open Websockets for compile/autocomplete/etc
-        		            socket = new WebSocket('ws://127.0.0.1:' + data.toString() + '/jerky');
+                            alert(err);
+                            alert(fileData);
+
+        		            socket = new WebSocket('ws://127.0.0.1:' + fileData.toString() + '/jerky');
 
         		            socket.onopen = function () {
         		                //Show options when conected to server
         		                $('#compile-actions').children().show(500);
-        		                $('#compile-progress-bar').hide();
+        		                $('#preview-progress-bar').hide();
         		                socket.send(JSON.stringify({"callId" : 0,"req" : {"typehint":"ConnectionInfoReq"}}));
         		            };
 
@@ -143,19 +187,14 @@ win.on('close', function() {
         		                console.log('Lost ensime server connection!');
         		            };
 
-        		        }); 
+        		    }); 
         		}
     	    });
 
             server.stderr.on('data', function(data){
                 console.log(`stderr: ${data}`);
             });
-        });
-        
-    	gensime.stdout.on('data', function(data) {
-      		console.log(`stdout: ${data}`);
-    	});
-           
+        });          
 
         //Escondo y desactivo todo lo demas
         $('#main-menu').children().removeClass("active");
@@ -164,25 +203,16 @@ win.on('close', function() {
         $('#code-editor').show(500);
         $('#new-sketch').addClass("active");
         $('#new-sketch-modal').modal('hide');
-    });
-    
-
-    $('#compile').click(function() {
-        fs.writeFile(newName+myApp, editor.getValue());
-        var exec = require('child_process').exec;
-        var proc = exec("cd "+newName+" && sbt clean compile fastOptJS", function(error, stdout, stderr){});
-        proc.stdout.on('data', function(data){
-            console.log(`stdout: ${data}`);
-        });
-        proc.stderr.on('data', function(data){
-            console.log(`stderr: ${data}`);
-        });
-    });
-    
+    });   
    
     $('#preview').click(function() {
-        var exec = require('child_process').exec;
-        var proc2 = exec("x-www-browser "+newName+"/index.html");
+        fs.writeFile(newName+myApp, editor.getValue());
+        prevCount++;
+        console.log("Prev Count: "+prevCount);
+        $('#preview').hide(500);
+        $('#compile-progress-bar').show(500);
+        //var exec = require('child_process').exec;
+        //var proc2 = exec("x-www-browser "+newName+"/index.html");
     });
 });
                                     

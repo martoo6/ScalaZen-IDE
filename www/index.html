@@ -74,16 +74,18 @@
 
           <div class="row">
             <div class="col-md-2">
-              <div class="progress" id="compile-progress-bar">
-                <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+              <div class="progress" id="preview-progress-bar">
+                <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%" id="compile-progress-bar-text">
                   Loading Server
                 </div>
               </div>
 
+              <div class="progress" id="compile-progress-bar">
+                <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                  Compiling
+              </div>
+              </div>
               <ul class="nav nav-pills nav-stacked" id="compile-actions">
-                <li class="active" id="compile">
-                  <a href="#">Compile</a>
-                </li>
                 <li class="active" id="preview">
                   <a href="#">Preview</a>
                 </li>
