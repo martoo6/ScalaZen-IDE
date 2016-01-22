@@ -112,7 +112,8 @@ win.on('close', function() {
         //Pretty graphics
         $('#compile-progress-bar').hide();
         $('#compile-actions').children().hide();
-        $('#preview-progress-bar').show();
+        $('#autocomplete-progress-bar').show();
+        $('#compile-progress-bar').show();
 
         //Important Stuff
         newSketchName = $('#new-sketch-name').val();
@@ -156,10 +157,6 @@ win.on('close', function() {
             var newData = data.toString().replace(/templates\/[a-zA-Z0-9-]*\//g, "sketches/"+newName+"/")
                                         .replace(/templates\/[a-zA-Z0-9-]*\"/g, "sketches/"+newName+"\"");
 
-
-            alert("sketches/"+newName);
-            alert(newData);
-
             fs.writeFileSync(path.resolve(newName) + '/.ensime', newData);
 
             server = exec("../ensime "+ path.resolve(newName) + '/.ensime', function (error2, stdout2, stderr2) {});
@@ -171,15 +168,9 @@ win.on('close', function() {
         		if(serverData.indexOf('Setting up new file watchers') > -1){
         			fs.readFile(path.resolve(newName) + '/.ensime_cache/http',function (err, fileData) {
         		            //Open Websockets for compile/autocomplete/etc
-                            alert(err);
-                            alert(fileData);
-
         		            socket = new WebSocket('ws://127.0.0.1:' + fileData.toString() + '/jerky');
 
         		            socket.onopen = function () {
-        		                //Show options when conected to server
-        		                $('#compile-actions').children().show(500);
-        		                $('#preview-progress-bar').hide();
         		                socket.send(JSON.stringify({"callId" : 0,"req" : {"typehint":"ConnectionInfoReq"}}));
         		            };
 
@@ -189,6 +180,11 @@ win.on('close', function() {
 
         		    }); 
         		}
+
+                if(serverData.indexOf('received handled message FullTypeCheckCompleteEvent') > -1){
+                    //Show options when server is ready to accept requests
+                    $('#autocomplete-progress-bar').hide(500);
+                }
     	    });
 
             server.stderr.on('data', function(data){
