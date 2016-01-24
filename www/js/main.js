@@ -3,6 +3,10 @@ var fs = require('fs');
 var wrench = require('wrench');
 var path = require('path');
 var exec = require('child_process').exec;
+var spawn = require('child_process').spawn;
+var kill = require('tree-kill');
+
+
 
 var win = require('nw.gui').Window.get();
 win.showDevTools();
@@ -13,6 +17,23 @@ var callId = 0;
 
 var socket;
 var server; 
+var sbtProc;
+
+
+
+var deleteFolderRecursive = function(path) {
+  if( fs.existsSync(path) ) {
+    fs.readdirSync(path).forEach(function(file,index){
+      var curPath = path + "/" + file;
+      if(fs.lstatSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(curPath);
+      } else { // delete file
+        fs.unlinkSync(curPath);
+      }
+    });
+    fs.rmdirSync(path);
+  }
+};
 
 win.on('close', function() {
     // Hide the window to give user the feeling of closing immediately
@@ -20,9 +41,39 @@ win.on('close', function() {
     if (typeof socket !== 'undefined') {
         socket.close();
     }
-    server.kill('SIGKILL');
-    this.close(true);
+    console.log("READY TO KILL THE PROCESSES: "+ server.pid + ", " + sbtProc.pid +" !!!!!");
+    //Try to kill spawned processes
+    kill(server.pid, 'SIGTERM', function(err){
+
+        console.log("Server Killed");
+        kill(sbtProc.pid, 'SIGKILL',function(err){
+            console.log("SBT Killed");
+
+            
+            console.log("DELETING ENSIME CACHE:  " + newName + '/.ensime_cache');
+
+//deleteFolderRecursive(newName + '.ensime_cache');
+
+            wrench.rmdirSyncRecursive(newName + '/.ensime_cache', function(d){
+              //  console.log(d);
+                //this.close(true);
+                
+  var gui = require('nw.gui');
+  var win = gui.Window.get();
+  win.close();
+
+            });
+
+
+        });
+    });
+    
+    
 });
+
+function exitSketch(){
+    
+}
 
     var langTools = ace.require("ace/ext/language_tools");
     var editor = ace.edit("editor");
@@ -126,17 +177,17 @@ win.on('close', function() {
         fs.readFile(newName+myApp,function (err, data) {
             editor.setValue(data.toString());
 
-            var proc = exec("cd "+newName+" && sbt ~fastOptJS", function(error, stdout, stderr){});
-            proc.stdout.on('data', function(data){
+            sbtProc = spawn("sbt", ["~fastOptJS"], {cwd: path.resolve(newName)});
+            sbtProc.stdout.on('data', function(data){
                 console.log(`stdout: ${data}`);
 
-                if(data.indexOf(prevCount+". Waiting for source changes...") > -1){
+                if(data.toString().indexOf(prevCount+". Waiting for source changes...") > -1){
                     exec("x-www-browser "+newName+"/index.html");
                     $('#preview').show(500);
                     $('#compile-progress-bar').hide(500);
                 }
             });
-            proc.stderr.on('data', function(data){
+            sbtProc.stderr.on('data', function(data){
                 console.log(`stderr: ${data}`);
             });
         });    
@@ -146,8 +197,6 @@ win.on('close', function() {
         
         //var gensime = exec("cd "+newName+" && sbt gen-ensime", function (error, stdout, stderr) {
         
-        
-            alert(path.resolve(newName) + '/.ensime');
 
         fs.readFile(path.resolve(newName) + '/.ensime',function (err, data) {
 
@@ -159,13 +208,13 @@ win.on('close', function() {
 
             fs.writeFileSync(path.resolve(newName) + '/.ensime', newData);
 
-            server = exec("../ensime "+ path.resolve(newName) + '/.ensime', function (error2, stdout2, stderr2) {});
+            server = spawn("../ensime", [path.resolve(newName) + '/.ensime']);
     	    server.stdout.on('data', function(serverData) {
           	
                 console.log(`stdout: ${serverData}`);
         		
         		//Means, server is ready for action
-        		if(serverData.indexOf('Setting up new file watchers') > -1){
+        		if(serverData.toString().indexOf('Setting up new file watchers') > -1){
         			fs.readFile(path.resolve(newName) + '/.ensime_cache/http',function (err, fileData) {
         		            //Open Websockets for compile/autocomplete/etc
         		            socket = new WebSocket('ws://127.0.0.1:' + fileData.toString() + '/jerky');
@@ -181,7 +230,7 @@ win.on('close', function() {
         		    }); 
         		}
 
-                if(serverData.indexOf('received handled message FullTypeCheckCompleteEvent') > -1){
+                if(serverData.toString().indexOf('received handled message FullTypeCheckCompleteEvent') > -1){
                     //Show options when server is ready to accept requests
                     $('#autocomplete-progress-bar').hide(500);
                 }
@@ -204,11 +253,8 @@ win.on('close', function() {
     $('#preview').click(function() {
         fs.writeFile(newName+myApp, editor.getValue());
         prevCount++;
-        console.log("Prev Count: "+prevCount);
         $('#preview').hide(500);
         $('#compile-progress-bar').show(500);
-        //var exec = require('child_process').exec;
-        //var proc2 = exec("x-www-browser "+newName+"/index.html");
     });
 });
                                     
