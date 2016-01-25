@@ -36,39 +36,34 @@ var deleteFolderRecursive = function(path) {
 };
 
 win.on('close', function() {
+    var self = this;
     // Hide the window to give user the feeling of closing immediately
     this.hide();
     if (typeof socket !== 'undefined') {
         socket.close();
     }
-    console.log("READY TO KILL THE PROCESSES: "+ server.pid + ", " + sbtProc.pid +" !!!!!");
     //Try to kill spawned processes
-    kill(server.pid, 'SIGTERM', function(err){
+    if(typeof socket !== 'undefined'){
+        kill(server.pid, 'SIGTERM', function(err){
 
-        console.log("Server Killed");
-        kill(sbtProc.pid, 'SIGKILL',function(err){
-            console.log("SBT Killed");
-
-            
-            console.log("DELETING ENSIME CACHE:  " + newName + '/.ensime_cache');
-
-//deleteFolderRecursive(newName + '.ensime_cache');
-
-            wrench.rmdirSyncRecursive(newName + '/.ensime_cache', function(d){
-              //  console.log(d);
-                //this.close(true);
-                
-  var gui = require('nw.gui');
-  var win = gui.Window.get();
-  win.close();
-
-            });
-
-
+            console.log("Server Killed");
+            if(typeof sbtProc !== 'undefined'){
+                kill(sbtProc.pid, 'SIGKILL',function(err){
+                    console.log("SBT Killed");                    
+                    
+                    wrench.rmdirSyncRecursive(newName + '/.ensime_cache', function(d){
+                        console.log("ENSIME CACHE CLEARED");
+                        self.close(true);
+                    });
+                });
+            }else{
+                self.close(true);
+            }   
         });
-    });
-    
-    
+    }else{
+        self.close(true);
+    }
+   
 });
 
 function exitSketch(){
