@@ -7,10 +7,12 @@ var spawn = require('child_process').spawn;
 var kill = require('tree-kill');
 
 
+var gui = require('nw.gui');
 
-var win = require('nw.gui').Window.get();
+var win = gui.Window.get();
 win.showDevTools();
 
+var previewWin=false;
 
 $( document ).ready( function(){
 var callId = 0;
@@ -177,7 +179,22 @@ function exitSketch(){
                 console.log(`stdout: ${data}`);
 
                 if(data.toString().indexOf(prevCount+". Waiting for source changes...") > -1){
-                    exec("x-www-browser "+newName+"/index.html");
+                    //exec("x-www-browser "+newName+"/index.html");
+
+                    if (previewWin == false) {
+                        previewWin = gui.Window.open(newName + '/index.html', {
+                          focus: true
+                        });
+                        previewWin.on('close', function() {
+                            this.hide();
+                            previewWin = false;
+                            this.close(true);
+                        });
+                    } else {
+                        previewWin.reloadIgnoringCache();
+                    }
+
+
                     $('#preview').show(500);
                     $('#compile-progress-bar').hide(500);
                 }
