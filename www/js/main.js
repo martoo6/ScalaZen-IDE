@@ -53,10 +53,11 @@ win.on('close', function() {
                 kill(sbtProc.pid, 'SIGKILL',function(err){
                     console.log("SBT Killed");                    
                     
-                    wrench.rmdirSyncRecursive(newName + '/.ensime_cache', function(d){
-                        console.log("ENSIME CACHE CLEARED");
-                        self.close(true);
-                    });
+                    wrench.rmdirSyncRecursive(newName + '/.ensime_cache');
+                    
+		    console.log("ENSIME CACHE CLEARED");
+                    self.close(true);
+
                 });
             }else{
                 self.close(true);
@@ -183,7 +184,9 @@ function exitSketch(){
 
                     if (previewWin == false) {
                         previewWin = gui.Window.open(newName + '/index.html', {
-                          focus: true
+                          focus: true,
+			  toolbar:false,
+			  title: newName + " preview"
                         });
                         previewWin.on('close', function() {
                             this.hide();
@@ -192,6 +195,7 @@ function exitSketch(){
                         });
                     } else {
                         previewWin.reloadIgnoringCache();
+			previewWin.restore();
                     }
 
 
@@ -267,6 +271,7 @@ function exitSketch(){
         prevCount++;
         $('#preview').hide(500);
         $('#compile-progress-bar').show(500);
+	if (previewWin != false) previewWin.minimize();
     });
 });
                                     
