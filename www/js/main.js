@@ -41,6 +41,7 @@ win.on('close', function() {
     var self = this;
     // Hide the window to give user the feeling of closing immediately
     this.hide();
+    gui.App.closeAllWindows();
     if (typeof socket !== 'undefined') {
         socket.close();
     }
@@ -54,24 +55,19 @@ win.on('close', function() {
                     console.log("SBT Killed");                    
                     
                     wrench.rmdirSyncRecursive(newName + '/.ensime_cache');
-                    
-		    console.log("ENSIME CACHE CLEARED");
-                    self.close(true);
+		            console.log("ENSIME CACHE CLEARED");
 
+                    gui.App.quit();
                 });
             }else{
-                self.close(true);
+                gui.App.quit();
             }   
         });
     }else{
-        self.close(true);
+        gui.App.quit();
     }
    
 });
-
-function exitSketch(){
-    
-}
 
     var langTools = ace.require("ace/ext/language_tools");
     var editor = ace.edit("editor");
@@ -108,11 +104,66 @@ function exitSketch(){
                     console.log(event.data);
                     console.log('______________________________________________________________________________');
 
-                    //TODO: Order the list acording to user usage (history), also filter by blacklist
+                    //TODO: Order the list acording to user usage (history), also filter by blacklist properly (this is not bad anyway)
+
+                    //Implicit conversions and functions nobody know what they do.
+                    var blacklist = ['Vec3ToVector3',
+                                    'Vec3IntToVector3',
+                                    'Vec3IntDoubleDoubleToVector3',
+                                    'Vec3DoubleIntDoubleToVector3',
+                                    'Vec3DoubleDoubleIntToVector3',
+                                    'Vec3IntIntDoubleToVector3',
+                                    'Vec3DoubleIntIntToVector3',
+                                    'Vec3IntDoubleIntToVector3',
+                                    'Vec2ToVector3',
+                                    'Vec2IntToVector3',
+                                    'Vec2DoubleIntToVector3',
+                                    'Vec2IntDoubleToVector3',
+                                    'IntToDouble',
+                                    'SeqVec3ToVector3',
+                                    'SeqVec3IntToVector3',
+                                    'SeqVec3IntDoubleDoubleToVector3',
+                                    'SeqVec3DoubleIntDoubleToVector3',
+                                    'SeqVec3DoubleDoubleIntToVector3',
+                                    'SeqVec3IntIntDoubleToVector3',
+                                    'SeqVec3DoubleIntIntToVector3',
+                                    'SeqVec3IntDoubleIntToVector3',
+                                    'SeqVec2ToVector3',
+                                    'SeqVec2IntToVector3',
+                                    'SeqVec2DoubleIntToVector3',
+                                    'SeqVec2IntDoubleToVector3',
+                                    'SeqIntToColor',
+                                    'IntToColor',
+                                    '→',
+                                    '->',
+                                    '##',
+                                    'finalize',
+                                    'notifyAll',
+                                    'ensuring',
+                                    'vec2Double',
+                                    'vec2Int',
+                                    'vec2DoubleInt',
+                                    'vec2IntDouble',
+                                    'vec3Double',
+                                    'vec3Int',
+                                    'vec3IntDoubleDouble',
+                                    'vec3DoubleIntDouble',
+                                    'vec3DoubleDoubleInt',
+                                    'vec3IntIntDouble',
+                                    'vec3DoubleIntInt',
+                                    'vec3IntDoubleInt'
+                                    ];
+
+
+
                     var jsonData = JSON.parse(event.data)
 
                     if(jsonData.payload.typehint=='CompletionInfoList'){
-                       var list = jsonData.payload.completions.map(function(e){
+                       var list = jsonData.payload.completions
+                                                    .filter(function(e){
+                                                        return blacklist.indexOf(e.name) == -1;
+                                                    })
+                                                    .map(function(e){
                             var printName = e.name
                             var compoundName = e.name 
                             if(e.typeSig.sections.length > 0){
@@ -159,10 +210,10 @@ function exitSketch(){
     $('#create-sketch').click(function() {
         
         //Pretty graphics
+        $('#preview').hide();
         $('#compile-progress-bar').hide();
-        $('#compile-actions').children().hide();
         $('#autocomplete-progress-bar').show();
-        $('#compile-progress-bar').show();
+        
 
         //Important Stuff
         newSketchName = $('#new-sketch-name').val();
@@ -172,41 +223,10 @@ function exitSketch(){
         
 
         console.log("File Name to Read: "+newName+myApp);
+
         fs.readFile(newName+myApp,function (err, data) {
             editor.setValue(data.toString());
-
-            sbtProc = spawn("sbt", ["~fastOptJS"], {cwd: path.resolve(newName)});
-            sbtProc.stdout.on('data', function(data){
-                console.log(`stdout: ${data}`);
-
-                if(data.toString().indexOf(prevCount+". Waiting for source changes...") > -1){
-                    //exec("x-www-browser "+newName+"/index.html");
-
-                    if (previewWin == false) {
-                        previewWin = gui.Window.open(newName + '/index.html', {
-                          focus: true,
-			  toolbar:false,
-			  title: newName + " preview"
-                        });
-                        previewWin.on('close', function() {
-                            this.hide();
-                            previewWin = false;
-                            this.close(true);
-                        });
-                    } else {
-                        previewWin.reloadIgnoringCache();
-			previewWin.restore();
-                    }
-
-
-                    $('#preview').show(500);
-                    $('#compile-progress-bar').hide(500);
-                }
-            });
-            sbtProc.stderr.on('data', function(data){
-                console.log(`stderr: ${data}`);
-            });
-        });    
+        });
             
 
         //Start Ensime Server per Sketch (Its ugly, I know)        
@@ -227,7 +247,7 @@ function exitSketch(){
             server = spawn("../ensime", [path.resolve(newName) + '/.ensime']);
     	    server.stdout.on('data', function(serverData) {
           	
-                console.log(`stdout: ${serverData}`);
+                console.log(`[ENSIME] - stdout: ${serverData}`);
         		
         		//Means, server is ready for action
         		if(serverData.toString().indexOf('Setting up new file watchers') > -1){
@@ -243,17 +263,30 @@ function exitSketch(){
         		                console.log('Lost ensime server connection!');
         		            };
 
+
         		    }); 
         		}
 
                 if(serverData.toString().indexOf('received handled message FullTypeCheckCompleteEvent') > -1){
                     //Show options when server is ready to accept requests
                     $('#autocomplete-progress-bar').hide(500);
+                    $('#preview').show(500);
+
+                    //Open preview window as soon as the server autocomplete is ready for action.
+                    if (previewWin == false) {
+                        previewWin = gui.Window.open(newName + '/index.html', {
+                            focus: true,
+                            toolbar:false,
+                            title: newName + " preview"
+                        });
+                    }
+
+
                 }
     	    });
 
             server.stderr.on('data', function(data){
-                console.log(`stderr: ${data}`);
+                console.log(`[ENSIME] - stderr: ${data}`);
             });
         });          
 
@@ -267,8 +300,46 @@ function exitSketch(){
     });   
    
     $('#preview').click(function() {
+
         fs.writeFile(newName+myApp, editor.getValue());
-        prevCount++;
+
+        if(typeof sbtProc == 'undefined'){
+            sbtProc = spawn("sbt", ["~fastOptJS"], {cwd: path.resolve(newName)});
+            sbtProc.stdout.on('data', function(data){
+                console.log(`[SBT] - stdout: ${data}`);
+
+                if(data.toString().indexOf("Waiting for source changes...") > -1){
+                    //exec("x-www-browser "+newName+"/index.html");
+
+                    if (previewWin == false) {
+                        previewWin = gui.Window.open(newName + '/index.html', {
+                            focus: true,
+                            toolbar:false,
+                            title: newName + " preview"
+                        });
+                        previewWin.on('close', function() {
+                            this.hide();
+                            previewWin = false;
+                            this.close(true);
+                        });
+                    } else {
+                        previewWin.reloadIgnoringCache();
+                        previewWin.restore();
+                    }
+
+
+                    $('#preview').show(500);
+                    $('#compile-progress-bar').hide(500);
+                }
+
+                sbtProc.stderr.on('data', function(data){
+                    console.log(`[SBT] - stderr: ${data}`);
+                });
+
+            
+            });  
+        }
+        
         $('#preview').hide(500);
         $('#compile-progress-bar').show(500);
 	if (previewWin != false) previewWin.minimize();
