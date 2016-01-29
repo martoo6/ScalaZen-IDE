@@ -14,12 +14,14 @@ win.showDevTools();
 
 var previewWin=false;
 
+var sbtProc;
+
 $( document ).ready( function(){
 var callId = 0;
 
 var socket;
 var server; 
-var sbtProc;
+
 
 
 
@@ -234,6 +236,8 @@ win.on('close', function() {
         //var gensime = exec("cd "+newName+" && sbt gen-ensime", function (error, stdout, stderr) {
         
 
+        var autocompleteReady=false;
+
         fs.readFile(path.resolve(newName) + '/.ensime',function (err, data) {
 
             //g repalces all instances
@@ -267,21 +271,57 @@ win.on('close', function() {
         		    }); 
         		}
 
-                if(serverData.toString().indexOf('received handled message FullTypeCheckCompleteEvent') > -1){
+                if(serverData.toString().indexOf('received handled message FullTypeCheckCompleteEvent') > -1 && !autocompleteReady){
+                    autocompleteReady=true;
                     //Show options when server is ready to accept requests
                     $('#autocomplete-progress-bar').hide(500);
                     $('#preview').show(500);
 
                     //Open preview window as soon as the server autocomplete is ready for action.
-                    if (previewWin == false) {
                         previewWin = gui.Window.open(newName + '/index.html', {
                             focus: true,
                             toolbar:false,
                             title: newName + " preview"
                         });
-                    }
+
+                        previewWin.on('close', function() {
+                            this.hide();
+                            previewWin = false;
+                            this.close(true);
+                        });
+
+                    sbtProc = spawn("sbt", {cwd: path.resolve(newName)});
+                    sbtProc.stdin.setEncoding('utf-8');
+
+                    sbtProc.stdout.on('data', function(data){
+                        console.log(`[SBT] - stdout: ${data}`);
+
+                        if(data.toString().indexOf("Total time:") > -1){
+                            if (previewWin == false) {
+                                previewWin = gui.Window.open(newName + '/index.html', {
+                                    focus: true,
+                                    toolbar:false,
+                                    title: newName + " preview"
+                                });
+                                previewWin.on('close', function() {
+                                    this.hide();
+                                    previewWin = false;
+                                    this.close(true);
+                                });
+                            } else {
+                                previewWin.reloadIgnoringCache();
+                                previewWin.restore();
+                            }
 
 
+                            $('#preview').show(500);
+                            $('#compile-progress-bar').hide(500);
+                        }
+
+                        sbtProc.stderr.on('data', function(data){
+                            console.log(`[SBT] - stderr: ${data}`);
+                        });
+                    });  
                 }
     	    });
 
@@ -300,44 +340,9 @@ win.on('close', function() {
     });   
    
     $('#preview').click(function() {
-
-        fs.writeFile(newName+myApp, editor.getValue());
-
-        if(typeof sbtProc == 'undefined'){
-            sbtProc = spawn("sbt", ["~fastOptJS"], {cwd: path.resolve(newName)});
-            sbtProc.stdout.on('data', function(data){
-                console.log(`[SBT] - stdout: ${data}`);
-
-                if(data.toString().indexOf("Waiting for source changes...") > -1){
-                    //exec("x-www-browser "+newName+"/index.html");
-
-                    if (previewWin == false) {
-                        previewWin = gui.Window.open(newName + '/index.html', {
-                            focus: true,
-                            toolbar:false,
-                            title: newName + " preview"
-                        });
-                        previewWin.on('close', function() {
-                            this.hide();
-                            previewWin = false;
-                            this.close(true);
-                        });
-                    } else {
-                        previewWin.reloadIgnoringCache();
-                        previewWin.restore();
-                    }
-
-
-                    $('#preview').show(500);
-                    $('#compile-progress-bar').hide(500);
-                }
-
-                sbtProc.stderr.on('data', function(data){
-                    console.log(`[SBT] - stderr: ${data}`);
-                });
-
-            
-            });  
+        if(typeof sbtProc !== 'undefined'){
+            fs.writeFile(newName+myApp, editor.getValue());
+            sbtProc.stdin.write('fastOptJS\n');
         }
         
         $('#preview').hide(500);
