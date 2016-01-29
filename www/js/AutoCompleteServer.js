@@ -5,6 +5,7 @@ function AutoCompleteServer(){
     var callId = 0;
     var socket;
     var process;
+    var currentSketch;
     
     this.shutDown = function(){
         if(socket) socket.close();
@@ -12,14 +13,16 @@ function AutoCompleteServer(){
         if(process) process.kill('SIGKILL');
     };
     
-    this.startFor = function(sketchName){
-        process = exec("../ensime "+ sketchName + '/.ensime');
+    this.startFor = function(sketch){
+        currentSketch = sketch;
+        
+        process = exec("../ensime "+ currentSketch.sketchFolder() + '/.ensime');
         
         process.stdout.on('data', function(data) {
             console.log('stdout: ' + data);
 
             if(isReady(data)){
-                fs.readFile(sketchName + '/.ensime_cache/http',function (err, port) {
+                fs.readFile(currentSketch.sketchFolder() + '/.ensime_cache/http',function (err, port) {
                     //Open Websockets for compile/autocomplete/etc
                     socket = new WebSocket('ws://127.0.0.1:' + port + '/jerky');
 
@@ -53,7 +56,7 @@ function AutoCompleteServer(){
                     "typehint":"CompletionsReq",
                     "caseSens":true,
                     "fileInfo": {
-                        "file": editorData.file, 
+                        "file": path.resolve(currentSketch.appPath()),
                         "contents": editorData.contents
                     },
                     "reload":false

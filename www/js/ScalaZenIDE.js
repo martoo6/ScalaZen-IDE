@@ -3,14 +3,13 @@
  */
 function ScalaZenIDE(){
     
-    var editor;
     var currentSketch;
     var server = new AutoCompleteServer();
+    var editor = new Editor(server);
     var gallery; /////////// ESTO TIENE QUE INITEARSE ACA
     
     (function init(){
         new Gallery();
-        initEditor();
         bindEvents();
     }());
     
@@ -50,11 +49,7 @@ function ScalaZenIDE(){
 
             showCodeEditor();
         });
-
-
-        /*
-         * WRITES EDITOR CODE INTO FILE, COMPILE AND FASTOPT?
-         */
+        
         $('#compile').click(function() {
             currentSketch.compile();
         });
@@ -73,27 +68,4 @@ function ScalaZenIDE(){
         $('#new-sketch').addClass("active");
         $('#new-sketch-modal').modal('hide');
     }
-    
-    function initEditor(){
-        var langTools = ace.require("ace/ext/language_tools");
-        
-        editor = ace.edit("editor");
-
-        editor.getSession().setMode("ace/mode/scala");
-        editor.setDisplayIndentGuides(true);
-
-        var scalaCompleter = {
-            getCompletions: function(editor, session, pos, prefix, callback) {
-                server.getCompletions({
-                    "point": editor.session.doc.positionToIndex(pos), 
-                    "file": path.resolve(currentSketch.appPath()),
-                    "contents": editor.getValue()
-                });
-            }
-        };    
-
-        langTools.setCompleters([scalaCompleter]);
-        editor.setOptions({enableBasicAutocompletion: true});
-        editor.$blockScrolling = Infinity; // Prevents Ace warnings
-    };
 }

@@ -1,5 +1,5 @@
 function Sketch(sketchName, editor, server){
-    
+    var self = this;
     var name = sketchName;
     var sketchFolder = '../sketches/' + name;
     var threeJsApp = '/src/main/scala/ThreeJSApp.scala';
@@ -7,8 +7,12 @@ function Sketch(sketchName, editor, server){
     this.preview = function(){
         exec("x-www-browser " + sketchFolder + "/index.html");
     };
+    
+    this.sketchFolder = function(){
+        return sketchFolder;
+    };
 
-    this.appPath = function() {
+    this.appPath = function(){
         return sketchFolder + threeJsApp;
     };
     
@@ -23,7 +27,6 @@ function Sketch(sketchName, editor, server){
         proc.stderr.on('data', function(data){
             console.log('%cstderr: ' + data, 'color:red');
         });
-        
     };
     
     /*************
@@ -35,11 +38,11 @@ function Sketch(sketchName, editor, server){
 
     fs.readFile(this.appPath(),function (err, data) {
         editor.setValue(data.toString());
-    }); 
-
+    });
+    
     //Start Ensime Server per Sketch (Its ugly, I know)
     var gensime = exec("cd " + sketchFolder + " && sbt gen-ensime", function (error, stdout, stderr) {
-        server.startFor(sketchFolder);
+        server.startFor(self);
     });
 
     gensime.stdout.on('data', function(data) {
