@@ -26,3 +26,6 @@ project/plugins/project/
 .settings/
 nwjs-v0.12.3-linux-x64/
 ensime-server/
+
+templates/main-template/.classpath_nb
+
