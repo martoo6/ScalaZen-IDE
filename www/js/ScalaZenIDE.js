@@ -6,66 +6,78 @@ function ScalaZenIDE(){
     var currentSketch;
     var server = new AutoCompleteServer();
     var editor = new Editor(server);
-    var gallery; /////////// ESTO TIENE QUE INITEARSE ACA
+    var gallery = new Gallery();
     
-    (function init(){
-        new Gallery();
+    this.init = function(){
+        gallery.init();
         bindEvents();
-    }());
+    };
     
     function bindEvents(){
         win.on('close', function() {
-            this.hide();
-
-            server.shutDown();
-
-            this.close(true);
+            // hides to shutDown gracefully in background
+            this.hide(); 
+            
+            shutDownProcesses().then(function(){
+                gui.App.quit();
+            });
         });
 
-        $('#home-btn').click(function() {
-            //Escondo y desactivo todo lo demas
-            $('#main-menu').children().removeClass("active");
-            $('#content').children().hide();
-            //Muestro lo que quiero
-            $('#main-menu').addClass("active");
+        $('#home').click(function() {
+            changeSection();
+            
+            $('#main-menu').addClass('active');
         });
 
         $('#gallery-btn').click(function() {
-            //Escondo y desactivo todo lo demas
-            $('#main-menu').children().removeClass("active");
-            $('#content').children().hide();
-            //Muestro lo que quiero
-            $('#gallery-btn').addClass("active");
+            changeSection();
+            
+            $('#gallery-btn').addClass('active');
             $('#gallery').show(500);
         });
 
         $('#create-sketch').click(function() {
+            $('#preview').hide();
             var newSketchName = $('#new-sketch-name').val();
 
-            currentSketch = new Sketch(newSketchName, editor, server);
+            currentSketch = new Sketch(newSketchName, editor);
 
-            $('#compile-actions').children().hide();
-            $('#compile-progress-bar').show();
+            currentSketch.start(function(){
+                $('#preview').show(500);
+                $('#compile-progress-bar').hide(500);
+                $('#loading-progress-bar').hide(500);
+                
+                server.startFor(currentSketch);
+            });
 
             showCodeEditor();
         });
-        
-        $('#compile').click(function() {
-            currentSketch.compile();
-        });
 
         $('#preview').click(function() {
+            $('#preview').hide(500);
+            $('#compile-progress-bar').show(500);
+            
             currentSketch.preview();
         });
     }
     
     function showCodeEditor(){
-        //Escondo y desactivo todo lo demas
-        $('#main-menu').children().removeClass("active");
-        $('#content').children().hide();
-        //Muestro lo que quiero
+        changeSection();
+        
         $('#code-editor').show(500);
-        $('#new-sketch').addClass("active");
+        $('#new-sketch').addClass('active');
         $('#new-sketch-modal').modal('hide');
+    }
+    
+    function shutDownProcesses(){
+        return Promise.all([
+            server.shutDown(), currentSketch && currentSketch.close()
+        ]);
+    }
+    
+    function changeSection(){
+        //Disable selected menu button, and hide current content
+        $('#main-menu').children().removeClass('active');
+        $('#content').children().hide();
     }
 }

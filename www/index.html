@@ -4,12 +4,12 @@
     <head>
         <meta charset="utf-8">
         <title>ScalaZen</title>
-        
+
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <link href="css/main.css" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="css/component.css" />
-        
+
         <script type="text/javascript" src="js/vendor/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="js/main.js"></script>
         <script type="text/javascript" src="js/vendor/bootstrap.min.js"></script>
@@ -19,6 +19,8 @@
     </head>
 
     <body>
+
+
         <!-- Modal -->
         <div class="modal fade" id="new-sketch-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -38,6 +40,8 @@
             </div>
         </div>
 
+
+
         <div class="navbar navbar-default navbar-static-top">
             <div class="container">
                 <div class="navbar-header">
@@ -50,42 +54,43 @@
                 </div>
                 <div class="collapse navbar-collapse navbar-ex1-collapse">
                     <ul class="nav navbar-nav navbar-left" id="main-menu">
-                        <li class="active" id="home-btn">
+                        <li class="active" id="home">
                             <a href="#">Home</a>
                         </li>
                         <li id="new-sketch" data-toggle="modal" data-target="#new-sketch-modal">
                             <a href="#">New Sketch</a>
                         </li>
-                        <li id="gallery-btn">
-                            <a href="#">Gallery</a>
+                        <li>
+                            <a id="gallery-btn" href="#">Gallery</a>
                         </li>
                         <li>
-                            <a href="#">Examples</a>
+                            <a id="examples" href="#">Examples</a>
                         </li>
                     </ul>
                 </div>
             </div>
         </div>
         <div id="content">
-
             <div class="container" id="gallery">
                 <ul class="grid effect-3" id="grid"></ul>
             </div>
-
             <div class="container" id="code-editor">
+
+
 
                 <div class="row">
                     <div class="col-md-2">
-                        <div class="progress" id="compile-progress-bar">
+                        <div class="progress" id="loading-progress-bar">
                             <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
                                 Loading Server
                             </div>
                         </div>
-
+                        <div class="progress" id="compile-progress-bar">
+                            <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                                Compiling
+                            </div>
+                        </div>
                         <ul class="nav nav-pills nav-stacked" id="compile-actions">
-                            <li class="active" id="compile">
-                                <a href="#">Compile</a>
-                            </li>
                             <li class="active" id="preview">
                                 <a href="#">Preview</a>
                             </li>
@@ -102,7 +107,6 @@
                         </ul>
                         <div id="editor" style="height: 500px; width: 800px"></div>
                         <div id="commandline" style="position: absolute; bottom: 10px; height: 20px; width: 800px;"></div>
-                        </form>
                     </div>
                 </div>
             </div>

@@ -1,16 +1,13 @@
 var fs = require('fs');
 var wrench = require('wrench');
 var path = require('path');
-var exec = require('child_process').exec;
-var win = require('nw.gui').Window.get();
+var spawn = require('child_process').spawn;
+var kill = require('tree-kill');
+var gui = require('nw.gui');
+var win = gui.Window.get();
 
 win.showDevTools();
 
-/*
- * DOCUMENT READY
- */
 $(document).ready( function(){
-    var IDE = new ScalaZenIDE();
+    new ScalaZenIDE().init();
 });
-                                    
-                                    

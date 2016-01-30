@@ -8,35 +8,39 @@ function AutoCompleteServer(){
     var currentSketch;
     
     this.shutDown = function(){
-        if(socket) socket.close();
+        console.log('Killing Server!');
         
-        if(process) process.kill('SIGKILL');
+        return new Promise(function(resolve, reject){
+            if(socket) socket.close();
+            
+            if(process) 
+                kill(process.pid, 'SIGKILL', resolve);
+            else
+                resolve();
+        });
     };
     
     this.startFor = function(sketch){
         currentSketch = sketch;
         
-        process = exec("../ensime "+ currentSketch.sketchFolder() + '/.ensime');
+        process = spawn('../ensime', [sketch.absolutePath() + '/.ensime']);
         
-        process.stdout.on('data', function(data) {
-            console.log('stdout: ' + data);
+        process.stdout.on('data', function(serverData) {
+            console.log('stdout: ' + serverData);
 
-            if(isReady(data)){
-                fs.readFile(currentSketch.sketchFolder() + '/.ensime_cache/http',function (err, port) {
+            //Means, server is ready for action
+            if(isReady(serverData.toString())){
+                fs.readFile(sketch.absolutePath() + '/.ensime_cache/http',function (err, fileData) {
                     //Open Websockets for compile/autocomplete/etc
-                    socket = new WebSocket('ws://127.0.0.1:' + port + '/jerky');
+                    socket = new WebSocket('ws://127.0.0.1:' + fileData.toString() + '/jerky');
 
                     socket.onopen = function () {
-                        //Show options when conected to server
-                        $('#compile-actions').children().show(500);
-                        $('#compile-progress-bar').hide();
-                        socket.send(JSON.stringify({"callId" : 0,"req" : {"typehint":"ConnectionInfoReq"}}));
+                        socket.send(JSON.stringify({'callId' : 0,'req' : {'typehint':'ConnectionInfoReq'}}));
                     };
 
                     socket.onclose = function () {
-                        console.log('%cLost ensime server connection!', 'color:red');
+                        console.log('Lost ensime server connection!');
                     };
-
                 }); 
             }
         });
@@ -49,17 +53,17 @@ function AutoCompleteServer(){
     this.getCompletions = function(editorData){
         if (socket) {
             var req = JSON.stringify({
-                "callId" : ++callId,
-                "req" : {
-                    "point": editorData.point, 
-                    "maxResults":100,
-                    "typehint":"CompletionsReq",
-                    "caseSens":true,
-                    "fileInfo": {
-                        "file": path.resolve(currentSketch.appPath()),
-                        "contents": editorData.contents
+                'callId' : ++callId,
+                'req' : {
+                    'point': editorData.point, 
+                    'maxResults':100,
+                    'typehint':'CompletionsReq',
+                    'caseSens':true,
+                    'fileInfo': {
+                        'file': path.resolve(currentSketch.appPath()),
+                        'contents': editorData.contents
                     },
-                    "reload":false
+                    'reload':false
                 }
             });
 
@@ -80,13 +84,13 @@ function AutoCompleteServer(){
                         if(e.typeSig.sections.length > 0){
                             printName+='()'; 
                             var lst = e.typeSig.sections[0].map(function(x){return x[0]+':'+x[1]; });
-                            compoundName += '(' + lst.join(", ") + ')';
+                            compoundName += '(' + lst.join(', ') + ')';
                         }
                         compoundName += ' :' + e.typeSig.result;
                         return {value: e.name, caption: compoundName, score: e.relevance};
                     });
 
-                    callback(null, list);            
+                    editorData.callback(null, list);            
                 }
             };
         }
