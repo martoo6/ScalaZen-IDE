@@ -1,11 +1,12 @@
 {
   "name": "ScalaZen",
-  "description": "Super Cool ThreeJS With Scala Goodiness",
+  "description": "ScalaZen Creative Coding Enviroment",
   "version": "0.0.2",
   "main": "index.html",
   "window": {
     "toolbar": false,
     "width": 1024,
-    "height": 700
+    "height": 700,
+    "title": "ScalaZen"
   }
 }

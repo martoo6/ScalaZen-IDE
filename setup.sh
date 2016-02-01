@@ -24,6 +24,8 @@ if [ ! -x "$JAVA" ] ; then
 fi
 echo "  -> Using JDK at $JAVA_HOME"
 
+cd (cd templates/main-template/; sbt "gen-ensime")
+
 RESOLUTION_DIR=`pwd -P`/ensime-server
 CLASSPATH_FILE="$RESOLUTION_DIR/classpath"
 CLASSPATH_LOG="$RESOLUTION_DIR/sbt.log"
