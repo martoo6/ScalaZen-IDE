@@ -20,7 +20,7 @@ $( document ).ready( function(){
 var callId = 0;
 
 var socket;
-var server; 
+var ensime; 
 
 
 
@@ -49,7 +49,7 @@ win.on('close', function() {
     }
     //Try to kill spawned processes
     if(typeof socket !== 'undefined'){
-        kill(server.pid, 'SIGTERM', function(err){
+        kill(ensime.pid, 'SIGTERM', function(err){
 
             console.log("Server Killed");
             if(typeof sbtProc !== 'undefined'){
@@ -209,8 +209,12 @@ win.on('close', function() {
 
     var prevCount=1;
 
+
+    
     $('#create-sketch').click(function() {
-        
+
+        var autocompleteReady=false;
+
         //Pretty graphics
         $('#preview').hide();
         $('#compile-progress-bar').hide();
@@ -234,9 +238,6 @@ win.on('close', function() {
         //Start Ensime Server per Sketch (Its ugly, I know)        
         
         //var gensime = exec("cd "+newName+" && sbt gen-ensime", function (error, stdout, stderr) {
-        
-
-        var autocompleteReady=false;
 
         fs.readFile(path.resolve(newName) + '/.ensime',function (err, data) {
 
@@ -248,86 +249,7 @@ win.on('close', function() {
 
             fs.writeFileSync(path.resolve(newName) + '/.ensime', newData);
 
-            server = spawn("../ensime", [path.resolve(newName) + '/.ensime']);
-    	    server.stdout.on('data', function(serverData) {
-          	
-                console.log(`[ENSIME] - stdout: ${serverData}`);
-        		
-        		//Means, server is ready for action
-        		if(serverData.toString().indexOf('Setting up new file watchers') > -1){
-        			fs.readFile(path.resolve(newName) + '/.ensime_cache/http',function (err, fileData) {
-        		            //Open Websockets for compile/autocomplete/etc
-        		            socket = new WebSocket('ws://127.0.0.1:' + fileData.toString() + '/jerky');
-
-        		            socket.onopen = function () {
-        		                socket.send(JSON.stringify({"callId" : 0,"req" : {"typehint":"ConnectionInfoReq"}}));
-        		            };
-
-        		            socket.onclose = function () {
-        		                console.log('Lost ensime server connection!');
-        		            };
-
-
-        		    }); 
-        		}
-
-                if(serverData.toString().indexOf('received handled message FullTypeCheckCompleteEvent') > -1 && !autocompleteReady){
-                    autocompleteReady=true;
-                    //Show options when server is ready to accept requests
-                    $('#autocomplete-progress-bar').hide(500);
-                    $('#preview').show(500);
-
-                    //Open preview window as soon as the server autocomplete is ready for action.
-                        previewWin = gui.Window.open(newName + '/index.html', {
-                            focus: true,
-                            toolbar:false,
-                            title: newName + " preview"
-                        });
-
-                        previewWin.on('close', function() {
-                            this.hide();
-                            previewWin = false;
-                            this.close(true);
-                        });
-
-                    sbtProc = spawn("sbt", {cwd: path.resolve(newName)});
-                    sbtProc.stdin.setEncoding('utf-8');
-
-                    sbtProc.stdout.on('data', function(data){
-                        console.log(`[SBT] - stdout: ${data}`);
-
-                        if(data.toString().indexOf("Total time:") > -1){
-                            if (previewWin == false) {
-                                previewWin = gui.Window.open(newName + '/index.html', {
-                                    focus: true,
-                                    toolbar:false,
-                                    title: newName + " preview"
-                                });
-                                previewWin.on('close', function() {
-                                    this.hide();
-                                    previewWin = false;
-                                    this.close(true);
-                                });
-                            } else {
-                                previewWin.reloadIgnoringCache();
-                                previewWin.restore();
-                            }
-
-
-                            $('#preview').show(500);
-                            $('#compile-progress-bar').hide(500);
-                        }
-
-                        sbtProc.stderr.on('data', function(data){
-                            console.log(`[SBT] - stderr: ${data}`);
-                        });
-                    });  
-                }
-    	    });
-
-            server.stderr.on('data', function(data){
-                console.log(`[ENSIME] - stderr: ${data}`);
-            });
+            startEnsime();
         });          
 
         //Escondo y desactivo todo lo demas
@@ -337,17 +259,108 @@ win.on('close', function() {
         $('#code-editor').show(500);
         $('#new-sketch').addClass("active");
         $('#new-sketch-modal').modal('hide');
+
+
+
+        function startSbtProc(){
+            sbtProc = spawn("sbt", ["~fastOptJS"],{cwd: path.resolve(newName)});
+            sbtProc.stdin.setEncoding('utf-8');
+
+            sbtProc.stdout.on('data', function(data){
+                console.log(`[SBT] - stdout: ${data}`);
+
+                if(data.toString().indexOf("Total time:") > -1){
+                    if (previewWin == false) {
+                        previewWin = gui.Window.open(newName + '/index.html', {
+                            focus: true,
+                            toolbar:false,
+                            title: newName + " preview"
+                        });
+                        previewWin.on('close', function() {
+                            this.hide();
+                            previewWin = false;
+                            this.close(true);
+                        });
+                    } else {
+                        previewWin.reloadIgnoringCache();
+                        previewWin.restore();
+                    }
+
+
+                    $('#preview').show(500);
+                    $('#compile-progress-bar').hide(500);
+                }
+
+                sbtProc.stderr.on('data', function(data){
+                    console.log(`[SBT] - stderr: ${data}`);
+                });
+            });
+        }
+
+        function startEnsime(){
+            ensime = spawn("../ensime", [path.resolve(newName) + '/.ensime']);
+            ensime.stdout.on('data', function(ensimeData) {
+
+                console.log(`[ENSIME] - stdout: ${ensimeData}`);
+
+                //Means, server is ready for action
+                if(ensimeData.toString().indexOf('Setting up new file watchers') > -1){
+                    fs.readFile(path.resolve(newName) + '/.ensime_cache/http',function (err, fileData) {
+                        //Open Websockets for compile/autocomplete/etc
+                        socket = new WebSocket('ws://127.0.0.1:' + fileData.toString() + '/jerky');
+
+                        socket.onopen = function () {
+                            socket.send(JSON.stringify({"callId" : 0,"req" : {"typehint":"ConnectionInfoReq"}}));
+                        };
+
+                        socket.onclose = function () {
+                            console.log('Lost ensime server connection!');
+                        };
+
+
+                    });
+                }
+
+                if(ensimeData.toString().indexOf('received handled message FullTypeCheckCompleteEvent') > -1 && !autocompleteReady){
+                    autocompleteReady=true;
+                    //Show options when server is ready to accept requests
+                    $('#autocomplete-progress-bar').hide(500);
+/*                    $('#preview').show(500);
+
+                    //Open preview window as soon as the server autocomplete is ready for action.
+                    previewWin = gui.Window.open(newName + '/index.html', {
+                        focus: true,
+                        toolbar:false,
+                        title: newName + " preview"
+                    });
+
+                    previewWin.on('close', function() {
+                        this.hide();
+                        previewWin = false;
+                        this.close(true);
+                    });*/
+                }
+
+                if(ensimeData.toString().indexOf('committing index to disk') > -1){
+                    startSbtProc();
+                }
+            });
+
+            ensime.stderr.on('data', function(data){
+                console.log(`[ENSIME] - stderr: ${data}`);
+            });
+        }
     });   
    
     $('#preview').click(function() {
         if(typeof sbtProc !== 'undefined'){
             fs.writeFile(newName+myApp, editor.getValue());
-            sbtProc.stdin.write('fastOptJS\n');
-        }
-        
-        $('#preview').hide(500);
-        $('#compile-progress-bar').show(500);
-	if (previewWin != false) previewWin.minimize();
+            //sbtProc.stdin.write('fastOptJS\n');
+
+            $('#preview').hide(500);
+            $('#compile-progress-bar').show(500);
+            if (previewWin != false) previewWin.minimize();
+        }       
     });
 });
                                     
