@@ -273,9 +273,10 @@ win.on('close', function() {
                     if (previewWin == false) {
                         previewWin = gui.Window.open(newName + '/index.html', {
                             focus: true,
-                            toolbar:false,
+                            toolbar:true,
                             title: newName + " preview"
                         });
+                        previewWin.path = path.resolve(newName);
                         previewWin.on('close', function() {
                             this.hide();
                             previewWin = false;

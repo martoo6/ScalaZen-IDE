@@ -15,7 +15,13 @@
 <!-- Run main object -->
 <script type="text/javascript" src="./target/scala-2.11/scalajs_template-launcher.js"></script>
 <script type="text/javascript">
-    main.App().run(new ThreeJSApp());
+    var app = new ThreeJSApp();
+    main.App().run(app);
+    setTimeout(function() { 
+    	var dataUrl = app.renderer$1.domElement.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
+	alert(document.URL.slice('file://'.length, document.URL.length-'index.html'.length));
+    	require('fs').writeFile(document.URL.slice('file://'.length, document.URL.length-'index.html'.length)+'thumbnail.png', dataUrl, 'base64', function(err) {});
+    },1000);
 </script>
 </body>
 </html>
