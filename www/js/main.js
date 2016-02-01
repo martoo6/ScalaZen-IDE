@@ -202,14 +202,20 @@ win.on('close', function() {
 
 
     fs.readdir('../sketches', function(err, folders){
-
         folders.filter(function(f){return fs.statSync('../sketches/'+f).isDirectory();})
                .forEach(function(folder){
-                    var li = $('#grid').append('<li><a href=""><img src="https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg">'+ folder +'</a></li>');
+                    var thumbnailPath = '../sketches/'+folder+'/thumbnail.png';
+                    try{
+                        //Has to be sync or the animation library won't work, it sucks, should check it out.
+                        fs.accessSync(thumbnailPath, fs.F_OK);    
+                    }catch(err){
+                        thumbnailPath = 'https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg';
+                    }
+                    li = $('#grid').append('<li><a href=""><img src="'+thumbnailPath+'">'+ folder +'</a></li>');
                     li.click(function(){
                         loadSketch('../sketches/'+folder);
                         showCodeEditor();
-                    });
+                    });            
                 });
 
 
