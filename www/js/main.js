@@ -47,6 +47,24 @@ $( document ).ready( function(){
         if (typeof socket !== 'undefined') {
             socket.close();
         }
+
+
+        fs.readdirSync('../sketches', function(err, folders){
+            console.log(folders);
+                            folders.filter(function(f){return fs.statSync('../sketches/'+f).isDirectory();})
+                                .forEach(function(folder){
+                                    console.log("hola");
+                                try{
+                                    wrench.rmdirSyncRecursive(folder + '/.ensime_cache');    
+                                    console.log('Removed' + folder + ' Cache');
+                                }catch(e){
+                                    console.log(e);
+                                    console.log("NOT REMOVED")
+                                }
+                            });
+                        });
+                        console.log("ENSIME CACHE CLEARED");
+
         //Try to kill spawned processes
         if(typeof socket !== 'undefined'){
             kill(ensime.pid, 'SIGTERM', function(err){
@@ -55,9 +73,6 @@ $( document ).ready( function(){
                 if(typeof sbtProc !== 'undefined'){
                     kill(sbtProc.pid, 'SIGKILL',function(err){
                         console.log("SBT Killed");                    
-                        
-                        wrench.rmdirSyncRecursive(newName + '/.ensime_cache');
-    		            console.log("ENSIME CACHE CLEARED");
 
                         gui.App.quit();
                     });
@@ -68,25 +83,38 @@ $( document ).ready( function(){
         }else{
             gui.App.quit();
         }
+
+
     });
 
     function killProcesses(){
         if (typeof socket !== 'undefined') {
             socket.close();
         }
-        //Try to kill spawned processes
-        if(typeof socket !== 'undefined'){
-            kill(ensime.pid, 'SIGTERM', function(err){
 
+fs.readdir('../sketches', function(err, folders){
+                            folders.filter(function(f){return fs.statSync('../sketches/'+f).isDirectory();})
+                                .forEach(function(folder){
+                                try{
+                                    wrench.rmdirSyncRecursive(folder + '/.ensime_cache');    
+                                    console.log('Removed' + folder + ' Cache');
+                                }catch(e){
+                                    console.log(e);
+                                }
+                            });
+                        });
+                        
+                        console.log("ENSIME CACHE CLEARED");
+
+        //Try to kill spawned processes
+        if(typeof ensime !== 'undefined'){
+            kill(ensime.pid, 'SIGKILL', function(err){
                 console.log("Server Killed");
                 if(typeof sbtProc !== 'undefined'){
                     kill(sbtProc.pid, 'SIGKILL',function(err){
                         console.log("SBT Killed");                    
                         
-                        wrench.rmdirSyncRecursive(newName + '/.ensime_cache');
-                        console.log("ENSIME CACHE CLEARED");
-
-                        gui.App.quit();
+                        
                     });
                 }   
             });
@@ -245,13 +273,7 @@ $( document ).ready( function(){
     var autocompleteReady;
 
     $('#create-sketch').click(function() {
-        autocompleteReady=false;
-
-        //Pretty graphics
-        $('#preview').hide();
-        $('#compile-progress-bar').hide();
-        $('#autocomplete-progress-bar').show();
-        
+        autocompleteReady=false;       
 
         //Important Stuff
         newSketchName = $('#new-sketch-name').val();
@@ -264,6 +286,8 @@ $( document ).ready( function(){
     });
 
     function loadSketch(){
+        killProcesses();
+
         fs.readFile(newName+myApp,function (err, data) {
             editor.setValue(data.toString());
         });
@@ -278,7 +302,6 @@ $( document ).ready( function(){
                                         .replace(/templates\/[a-zA-Z0-9-]*\"/g, "sketches/"+newName+"\"");
 
             fs.writeFileSync(path.resolve(newName) + '/.ensime', newData);
-
             
             //Escondo y desactivo todo lo demas
             $('#main-menu').children().removeClass("active");
@@ -287,13 +310,15 @@ $( document ).ready( function(){
             $('#code-editor').show(500);
             $('#new-sketch').addClass("active");
             $('#new-sketch-modal').modal('hide');
+            $('#preview').hide();
 
             startEnsime();
         });          
     }
 
     function startSbtProc(){
-        sbtProc = spawn("sbt", ["~fastOptJS"],{cwd: path.resolve(newName)});
+        //sbtProc = spawn("sbt", ["~fastOptJS"],{cwd: path.resolve(newName)});
+        sbtProc = spawn("sbt", [],{cwd: path.resolve(newName)});
         sbtProc.stdin.setEncoding('utf-8');
 
         sbtProc.stdout.on('data', function(data){
@@ -322,9 +347,14 @@ $( document ).ready( function(){
                 $('#compile-progress-bar').hide(500);
             }
 
-            sbtProc.stderr.on('data', function(data){
-                console.log(`[SBT] - stderr: ${data}`);
-            });
+            if(data.toString().indexOf("Set current project to") > -1){
+                $('#preview').show(500);
+                $('#compile-progress-bar').hide(500);
+            }
+        });
+
+        sbtProc.stderr.on('data', function(data){
+            console.log(`[SBT] - stderr: ${data}`);
         });
     }
 
@@ -385,7 +415,7 @@ $( document ).ready( function(){
     $('#preview').click(function() {
         if(typeof sbtProc !== 'undefined'){
             fs.writeFile(newName+myApp, editor.getValue());
-            //sbtProc.stdin.write('fastOptJS\n');
+            sbtProc.stdin.write('fastOptJS\n');
 
             $('#preview').hide(500);
             $('#compile-progress-bar').show(500);
@@ -404,10 +434,11 @@ $( document ).ready( function(){
                     }catch(err){
                         thumbnailPath = 'https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg';
                     }
-                    li = $('#grid').append('<li><a href=""><img src="'+thumbnailPath+'">'+ folder +'</a></li>');
+                    
+                    $('#grid').append('<li id="'+ folder +'"><a href="#"><img src="'+thumbnailPath+'">'+ folder +'</a></li>');
+                    var li = $('#'+folder);
                     li.click(function(){
                         newName = '../sketches/'+folder;
-                        killProcesses();
                         loadSketch();
                     });            
                 });
