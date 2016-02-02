@@ -47,6 +47,11 @@ if [ ! -x "$JAVA" ] ; then
 fi
 info "Using JDK at $JAVA_HOME"
 
+cd (cd templates/main-template/; sbt "gen-ensime")
+cd (cd examples/PaintingWalkers/; sbt "gen-ensime")
+cd (cd examples/ParametricPointCloud/; sbt "gen-ensime")
+cd (cd examples/WinterCircles/; sbt "gen-ensime")
+
 RESOLUTION_DIR="$(pwd -P)"/ensime-server
 CLASSPATH_FILE="$RESOLUTION_DIR/classpath"
 CLASSPATH_LOG="$RESOLUTION_DIR/sbt.log"

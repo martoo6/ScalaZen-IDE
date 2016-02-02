@@ -7,12 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/main.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/component.css" />
     <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
     <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script src="js/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/modernizr.custom.js"></script>
   </head>
   
   <body>
@@ -51,16 +53,16 @@
         </div>
         <div class="collapse navbar-collapse navbar-ex1-collapse">
           <ul class="nav navbar-nav navbar-left" id="main-menu">
-            <li class="active" id="home">
+            <li class="active" id="home-btn">
               <a href="#">Home</a>
             </li>
             <li id="new-sketch" data-toggle="modal" data-target="#new-sketch-modal">
               <a href="#">New Sketch</a>
             </li>
-            <li>
+            <li id="gallery-btn">
               <a href="#">Gallery</a>
             </li>
-            <li>
+            <li id="examples-btn">
               <a href="#">Examples</a>
             </li>
           </ul>
@@ -68,22 +70,39 @@
       </div>
     </div>
     <div id="content">
+
+      <div class="container" id="home">
+        <div class="jumbotron">
+          <h1>Welcome to <strong>ScalaZen</strong> !</h1> 
+          <p>Welcome to ScalaZen! Create a <em>new sketch</em> from a template, or go to <em>examples</em> for some inspiration. If this is not your first time on ScalaZen, go to the <em>gallery</em> to reload a previous sketch.</p> 
+        </div>
+      </div>
+      <div class="container" id="gallery">
+        <ul class="grid effect-3" id="gallery-grid">         
+        </ul>
+      </div>
+      <div class="container" id="examples">
+        <ul class="grid effect-3" id="examples-grid">         
+        </ul>
+      </div>
         <div class="container" id="code-editor">
           
 
 
           <div class="row">
             <div class="col-md-2">
-              <div class="progress" id="compile-progress-bar">
-                <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+              <div class="progress" id="autocomplete-progress-bar">
+                <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%" id="compile-progress-bar-text">
                   Loading Server
                 </div>
               </div>
 
+              <div class="progress" id="compile-progress-bar">
+                <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                  Compiling
+              </div>
+              </div>
               <ul class="nav nav-pills nav-stacked" id="compile-actions">
-                <li class="active" id="compile">
-                  <a href="#">Compile</a>
-                </li>
                 <li class="active" id="preview">
                   <a href="#">Preview</a>
                 </li>
@@ -105,6 +124,10 @@
           </div>
         </div>
     </div>
+    <script src="js/masonry.pkgd.min.js"></script>
+    <script src="js/imagesloaded.js"></script>
+    <script src="js/classie.js"></script>
+    <script src="js/AnimOnScroll.js"></script>
   </body>
 
 </html>

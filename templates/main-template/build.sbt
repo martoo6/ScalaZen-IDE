@@ -15,3 +15,5 @@ skip in packageJSDependencies := false
 persistLauncher in Compile := true
 
 persistLauncher in Test := false
+
+offline := true
