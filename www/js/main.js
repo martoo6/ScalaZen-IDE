@@ -22,22 +22,19 @@ $( document ).ready( function(){
     var socket;
     var ensime; 
 
-
-
-
-    var deleteFolderRecursive = function(path) {
-      if( fs.existsSync(path) ) {
-        fs.readdirSync(path).forEach(function(file,index){
-          var curPath = path + "/" + file;
-          if(fs.lstatSync(curPath).isDirectory()) { // recurse
-            deleteFolderRecursive(curPath);
-          } else { // delete file
-            fs.unlinkSync(curPath);
-          }
+    function removeCache(folderPath){
+        console.log('Ready to remove: ' + folderPath);
+        var folders = fs.readdirSync(folderPath);
+        folders.filter(function(f){ return fs.statSync(folderPath + '/' +f).isDirectory(); })
+            .forEach(function(folder){
+            try{
+                wrench.rmdirSyncRecursive(folderPath + '/' + folder + '/.ensime_cache');    
+                console.log('Removed: ' + folder + '\'s cache');
+            }catch(e){
+                //Do nothing
+            }
         });
-        fs.rmdirSync(path);
-      }
-    };
+    }
 
     win.on('close', function() {
         var self = this;
@@ -49,21 +46,9 @@ $( document ).ready( function(){
         }
 
 
-        fs.readdirSync('../sketches', function(err, folders){
-            console.log(folders);
-                            folders.filter(function(f){return fs.statSync('../sketches/'+f).isDirectory();})
-                                .forEach(function(folder){
-                                    console.log("hola");
-                                try{
-                                    wrench.rmdirSyncRecursive('../sketches/' + folder + '/.ensime_cache');    
-                                    console.log('Removed' + folder + ' Cache');
-                                }catch(e){
-                                    console.log(e);
-                                    console.log("NOT REMOVED")
-                                }
-                            });
-                        });
-                        console.log("ENSIME CACHE CLEARED");
+        removeCache('../sketches');
+        removeCache('../examples');
+        console.log("ENSIME CACHE CLEARED");
 
         //Try to kill spawned processes
         if(typeof socket !== 'undefined'){
@@ -73,7 +58,6 @@ $( document ).ready( function(){
                 if(typeof sbtProc !== 'undefined'){
                     kill(sbtProc.pid, 'SIGKILL',function(err){
                         console.log("SBT Killed");                    
-
                         gui.App.quit();
                     });
                 }else{
@@ -92,19 +76,7 @@ $( document ).ready( function(){
             socket.close();
         }
 
-fs.readdir('../sketches', function(err, folders){
-                            folders.filter(function(f){return fs.statSync('../sketches/'+f).isDirectory();})
-                                .forEach(function(folder){
-                                try{
-                                    wrench.rmdirSyncRecursive('../sketches/' + folder + '/.ensime_cache');    
-                                    console.log('Removed' + folder + ' Cache');
-                                }catch(e){
-                                    console.log(e);
-                                }
-                            });
-                        });
-                        
-                        console.log("ENSIME CACHE CLEARED");
+
 
         //Try to kill spawned processes
         if(typeof ensime !== 'undefined'){
@@ -119,6 +91,10 @@ fs.readdir('../sketches', function(err, folders){
                 }   
             });
         }
+
+		removeCache('../sketches');
+        removeCache('../examples');
+        console.log("ENSIME CACHE CLEARED");
     }
 
     var langTools = ace.require("ace/ext/language_tools");
@@ -253,6 +229,7 @@ fs.readdir('../sketches', function(err, folders){
         $('#main-menu').children().removeClass("active");
         $('#content').children().hide();
         //Muestro lo que quiero
+        $('#home').show(500);
     });
 
     $('#gallery-btn').click(function() {
@@ -262,12 +239,27 @@ fs.readdir('../sketches', function(err, folders){
         //Muestro lo que quiero
         $('#gallery-btn').addClass("active");
         $('#code-editor').hide();
+        $('#examples').hide();
         $('#main-menu').addClass("active");
 
         $('#gallery').show(function(){
             loadGallery();
         });
-        
+    });
+
+    $('#examples-btn').click(function() {
+        //Escondo y desactivo todo lo demas
+        $('#main-menu').children().removeClass("active");
+        $('#content').children().hide();
+        //Muestro lo que quiero
+        $('#examples-btn').addClass("active");
+        $('#code-editor').hide();
+        $('#gallery').hide();
+        $('#main-menu').addClass("active");
+
+        $('#examples').show(function(){
+            loadExamples();
+        });
     });
 
     var prevCount=1;
@@ -429,26 +421,26 @@ fs.readdir('../sketches', function(err, folders){
 
     function loadGallery(){
         fs.readdir('../sketches', function(err, folders){
-            $("#grid").empty();
+            $("#gallery-grid").empty();
             
-            folders.filter(function(f){return fs.statSync('../sketches/'+f).isDirectory();})
+            folders.filter(function(f){return fs.statSync('../sketches/' + f).isDirectory();})
                .forEach(function(folder){
-                    var thumbnailPath = '../sketches/'+folder+'/thumbnail.png';
+                    var thumbnailPath = '../sketches/' + folder + '/thumbnail.png';
                     try{
                         //Has to be sync or the animation library won't work, it sucks, should check it out.
                         fs.accessSync(thumbnailPath, fs.F_OK);    
                     }catch(err){
                         thumbnailPath = 'https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg';
                     }
-                    $('#grid').append('<li id="'+ folder +'"><a href="#"><img src="'+thumbnailPath+'">'+ folder +'</a></li>');
-                    var li = $('#'+folder);
+                    $('#gallery-grid').append('<li id="sketch-' + folder + '"><a href="#"><img src="' + thumbnailPath + '">' + folder + '</a></li>');
+                    var li = $('#sketch-' + folder);
                     li.click(function(){
-                        newName = '../sketches/'+folder;
+                        newName = '../sketches/' + folder;
                         loadSketch();
                     });            
                 });
 
-            new AnimOnScroll( document.getElementById( 'grid' ), {
+            new AnimOnScroll( document.getElementById( 'gallery-grid' ), {
                 minDuration : 0.4,
                 maxDuration : 0.7,
                 viewportFactor : 0.2
@@ -456,7 +448,34 @@ fs.readdir('../sketches', function(err, folders){
         });
     }
 
-    //loadGallery();
+    function loadExamples(){
+        fs.readdir('../examples', function(err, folders){
+            $("#examples-grid").empty();
+            
+            folders.filter(function(f){return fs.statSync('../examples/' + f).isDirectory();})
+               .forEach(function(folder){
+                    var thumbnailPath = '../examples/' + folder + '/thumbnail.png';
+                    try{
+                        //Has to be sync or the animation library won't work, it sucks, should check it out.
+                        fs.accessSync(thumbnailPath, fs.F_OK);    
+                    }catch(err){
+                        thumbnailPath = 'https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg';
+                    }
+                    $('#examples-grid').append('<li id="example-' + folder + '"><a href="#"><img src="' + thumbnailPath + '">' + folder + '</a></li>');
+                    var li = $('#example-' + folder);
+                    li.click(function(){
+                        newName = '../examples/' + folder;
+                        loadSketch();
+                    });            
+                });
+
+            new AnimOnScroll( document.getElementById( 'examples-grid' ), {
+                minDuration : 0.4,
+                maxDuration : 0.7,
+                viewportFactor : 0.2
+            });
+        });
+    }
 });
                                     
                                     
