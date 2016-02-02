@@ -24,13 +24,13 @@ function ScalaZenIDE(){
         });
 
         $('#home').click(function() {
-            changeSection();
+            hideCurrentSection();
             
             $('#main-menu').addClass('active');
         });
 
         $('#gallery-btn').click(function() {
-            changeSection();
+            hideCurrentSection();
             
             $('#gallery-btn').addClass('active');
             $('#gallery').show(500);
@@ -62,20 +62,14 @@ function ScalaZenIDE(){
     }
     
     function showCodeEditor(){
-        changeSection();
+        hideCurrentSection();
         
         $('#code-editor').show(500);
         $('#new-sketch').addClass('active');
         $('#new-sketch-modal').modal('hide');
     }
     
-    function shutDownProcesses(){
-        return Promise.all([
-            server.shutDown(), editor.unloadSketch()
-        ]);
-    }
-    
-    function changeSection(){
+    function hideCurrentSection(){
         //Disable selected menu button, and hide current content
         $('#main-menu').children().removeClass('active');
         $('#content').children().hide();
