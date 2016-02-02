@@ -233,11 +233,13 @@ $( document ).ready( function(){
         $('#content').children().hide();
         //Muestro lo que quiero
         $('#gallery-btn').addClass("active");
-        $('#gallery').show(500);
         $('#code-editor').hide();
-	    $('#main-menu').addClass("active");
+        $('#main-menu').addClass("active");
 
-        loadGallery();
+        $('#gallery').show(function(){
+            loadGallery();
+        });
+        
     });
 
     var prevCount=1;
@@ -394,6 +396,8 @@ $( document ).ready( function(){
     });
 
     function loadGallery(){
+        $("#grid").empty();
+        
         fs.readdir('../sketches', function(err, folders){
             folders.filter(function(f){return fs.statSync('../sketches/'+f).isDirectory();})
                .forEach(function(folder){
@@ -404,7 +408,7 @@ $( document ).ready( function(){
                     }catch(err){
                         thumbnailPath = 'https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg';
                     }
-                    li = $('#grid').append('<li><a href=""><img src="'+thumbnailPath+'">'+ folder +'</a></li>');
+                    li = $('#grid').append('<li><a href="#"><img src="'+thumbnailPath+'">'+ folder +'</a></li>');
                     li.click(function(){
                         newName = '../sketches/'+folder;
                         killProcesses();
