@@ -428,9 +428,9 @@ fs.readdir('../sketches', function(err, folders){
     });
 
     function loadGallery(){
-        $("#grid").empty();
-        
         fs.readdir('../sketches', function(err, folders){
+            $("#grid").empty();
+            
             folders.filter(function(f){return fs.statSync('../sketches/'+f).isDirectory();})
                .forEach(function(folder){
                     var thumbnailPath = '../sketches/'+folder+'/thumbnail.png';
