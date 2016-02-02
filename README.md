@@ -14,9 +14,16 @@ $ ./run.sh
 
 ## Screenshots
 
-![Screenshoot](http://i.imgur.com/eepZySy.png?1)
 
-![Screenshoot2](http://i.imgur.com/0pNTanB.png?1)
+![Home](http://imgur.com/vInOR0s.png)
+
+![Examples](http://imgur.com/U3i0dAq.png)
+
+![Gallery](http://imgur.com/CQmmKcr.png)
+
+![Editor](http://i.imgur.com/eepZySy.png?1)
+
+![Editor2](http://i.imgur.com/0pNTanB.png?1)
 
 ## Libraries used so far  
 - ScalaJS
