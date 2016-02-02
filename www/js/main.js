@@ -55,7 +55,7 @@ $( document ).ready( function(){
                                 .forEach(function(folder){
                                     console.log("hola");
                                 try{
-                                    wrench.rmdirSyncRecursive(folder + '/.ensime_cache');    
+                                    wrench.rmdirSyncRecursive('../sketches/' + folder + '/.ensime_cache');    
                                     console.log('Removed' + folder + ' Cache');
                                 }catch(e){
                                     console.log(e);
@@ -96,7 +96,7 @@ fs.readdir('../sketches', function(err, folders){
                             folders.filter(function(f){return fs.statSync('../sketches/'+f).isDirectory();})
                                 .forEach(function(folder){
                                 try{
-                                    wrench.rmdirSyncRecursive(folder + '/.ensime_cache');    
+                                    wrench.rmdirSyncRecursive('../sketches/' + folder + '/.ensime_cache');    
                                     console.log('Removed' + folder + ' Cache');
                                 }catch(e){
                                     console.log(e);
@@ -261,11 +261,13 @@ fs.readdir('../sketches', function(err, folders){
         $('#content').children().hide();
         //Muestro lo que quiero
         $('#gallery-btn').addClass("active");
-        $('#gallery').show(500);
         $('#code-editor').hide();
-	    $('#main-menu').addClass("active");
+        $('#main-menu').addClass("active");
 
-        loadGallery();
+        $('#gallery').show(function(){
+            loadGallery();
+        });
+        
     });
 
     var prevCount=1;
@@ -311,6 +313,8 @@ fs.readdir('../sketches', function(err, folders){
             $('#new-sketch').addClass("active");
             $('#new-sketch-modal').modal('hide');
             $('#preview').hide();
+            $('#compile-progress-bar').show();
+            $('#autocomplete-progress-bar').show();
 
             startEnsime();
         });          
@@ -424,6 +428,8 @@ fs.readdir('../sketches', function(err, folders){
     });
 
     function loadGallery(){
+        $("#grid").empty();
+        
         fs.readdir('../sketches', function(err, folders){
             folders.filter(function(f){return fs.statSync('../sketches/'+f).isDirectory();})
                .forEach(function(folder){
@@ -434,7 +440,6 @@ fs.readdir('../sketches', function(err, folders){
                     }catch(err){
                         thumbnailPath = 'https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg';
                     }
-                    
                     $('#grid').append('<li id="'+ folder +'"><a href="#"><img src="'+thumbnailPath+'">'+ folder +'</a></li>');
                     var li = $('#'+folder);
                     li.click(function(){
@@ -451,7 +456,7 @@ fs.readdir('../sketches', function(err, folders){
         });
     }
 
-    loadGallery();
+    //loadGallery();
 });
                                     
                                     
