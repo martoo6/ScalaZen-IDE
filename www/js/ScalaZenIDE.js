@@ -3,13 +3,13 @@
  */
 function ScalaZenIDE(){
     
-    var currentSketch;
     var server = new AutoCompleteServer();
     var editor = new Editor(server);
     var gallery = new Gallery();
     
     this.init = function(){
         gallery.init();
+        editor.init();
         bindEvents();
     };
     
@@ -38,17 +38,17 @@ function ScalaZenIDE(){
 
         $('#create-sketch').click(function() {
             $('#preview').hide();
+            
             var newSketchName = $('#new-sketch-name').val();
+            var newSketch = new Sketch(newSketchName, editor);
 
-            currentSketch = new Sketch(newSketchName, editor);
-
-            currentSketch.start(function(){
-                $('#preview').show(500);
-                $('#compile-progress-bar').hide(500);
-                $('#loading-progress-bar').hide(500);
-                
-                server.startFor(currentSketch);
-            });
+            editor
+                .load(newSketch)
+                .then(function(){
+                    $('#preview').show(500);
+                    $('#compile-progress-bar').hide(500);
+                    $('#loading-progress-bar').hide(500);
+                });
 
             showCodeEditor();
         });
@@ -71,7 +71,7 @@ function ScalaZenIDE(){
     
     function shutDownProcesses(){
         return Promise.all([
-            server.shutDown(), currentSketch && currentSketch.close()
+            server.shutDown(), editor.unloadSketch()
         ]);
     }
     

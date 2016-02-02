@@ -1,24 +1,45 @@
 function Editor(autoCompleteServer){
+  
+  var aceEditor;
+  var currentSketch;
+  
+  this.load = function(sketch){
+      currentSketch = sketch;
+      
+      return sketch
+              .start(this)
+              .then(function(){
+                autoCompleteServer.startFor(currentSketch);
+              });
+  };
+  
+  this.unloadSketch = function(){
+    return currentSketch.close();  
+  };
+  
+  this.previewSketch = function(){
+      currentSketch.preview();
+  };
     
-    var editor = ace.edit('editor');
+  this.init = function(){
+    aceEditor = ace.edit('aceEditor');
+    
     var langTools = ace.require('ace/ext/language_tools');
 
-    editor.getSession().setMode('ace/mode/scala');
-    editor.setDisplayIndentGuides(true);
-
     var scalaCompleter = {
-        getCompletions: function(editor, session, pos, prefix, callback) {
+        getCompletions: function(aceEditor, session, pos, prefix, callback) {
             autoCompleteServer.getCompletions({
-                'point': editor.session.doc.positionToIndex(pos),
-                'contents': editor.getValue(),
+                'point': aceEditor.session.doc.positionToIndex(pos),
+                'contents': aceEditor.getValue(),
                 'callback': callback
             });
         }
     };    
 
+    aceEditor.getSession().setMode('ace/mode/scala');
+    aceEditor.setDisplayIndentGuides(true);
     langTools.setCompleters([scalaCompleter]);
-    editor.setOptions({enableBasicAutocompletion: true});
-    editor.$blockScrolling = Infinity; // Prevents Ace warnings
-    
-    return editor;
+    aceEditor.setOptions({enableBasicAutocompletion: true});
+    aceEditor.$blockScrolling = Infinity; // Prevents Ace warnings
+  };
 };
