@@ -7,7 +7,7 @@ function Editor(autoCompleteServer){
       currentSketch = sketch;
       
       return sketch
-              .start(this)
+              .start(aceEditor)
               .then(function(){
                 autoCompleteServer.startFor(currentSketch);
               });
@@ -22,7 +22,7 @@ function Editor(autoCompleteServer){
   };
     
   this.init = function(){
-    aceEditor = ace.edit('aceEditor');
+    aceEditor = ace.edit('editor');
     
     var langTools = ace.require('ace/ext/language_tools');
 

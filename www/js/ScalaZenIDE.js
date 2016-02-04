@@ -56,7 +56,7 @@ function ScalaZenIDE(){
             $('#preview').hide(500);
             $('#compile-progress-bar').show(500);
             
-            currentSketch.preview();
+            editor.previewSketch();
         });
     }
     

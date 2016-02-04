@@ -1,4 +1,6 @@
 function Sketch(name){
+    var self = this;
+    
     var editor;
     var sbtProc;
     var prevCount;
@@ -35,8 +37,8 @@ function Sketch(name){
         });
     };
     
-    this.start = function(_editor){
-        editor = _editor;
+    this.start = function(editor){
+        setEditor(editor);
         
         //cant start twice
         this.start = function(){ throw Error('Sketch was already started!'); };
@@ -47,9 +49,9 @@ function Sketch(name){
 
             wrench.copyDirSyncRecursive('../templates/main-template', sketchFolder);
 
-            console.log('%cFile Name to Read: ' + this.appPath(), 'color:blue');
+            console.log('%cFile Name to Read: ' + self.appPath(), 'color:blue');
 
-            fs.readFile(this.appPath(),function (err, data) {
+            fs.readFile(self.appPath(),function (err, data) {
                 editor.setValue(data.toString());
 
                 prevCount = 1; // drinking cynide is the better fix
@@ -85,4 +87,8 @@ function Sketch(name){
             });
         });
     };
+    
+    function setEditor(_editor){
+        editor = _editor;
+    }
 }
