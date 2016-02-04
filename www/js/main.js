@@ -9,5 +9,15 @@ var win = gui.Window.get();
 win.showDevTools();
 
 $(document).ready( function(){
-    new ScalaZenIDE().init();
+    var IDE = new ScalaZenIDE().init();
+    
+    
+    win.on('close', function() {
+        this.hide(); // hides to shutDown gracefully in background
+
+        IDE.shutDown()
+           .then(function(){
+               gui.App.quit();
+           });
+    });
 });

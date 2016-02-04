@@ -10,19 +10,18 @@ function ScalaZenIDE(){
     this.init = function(){
         gallery.init();
         editor.init();
-        bindEvents();
+        bindGUIEvents();
+        
+        return this;
     };
     
-    function bindEvents(){
-        win.on('close', function() {
-            // hides to shutDown gracefully in background
-            this.hide(); 
-            
-            shutDownProcesses().then(function(){
-                gui.App.quit();
-            });
-        });
-
+    this.shutDown = function(){
+        return Promise.all([
+            server.shutDown(), editor.unloadSketch()
+        ]);
+    };
+    
+    function bindGUIEvents(){
         $('#home').click(function() {
             hideCurrentSection();
             
