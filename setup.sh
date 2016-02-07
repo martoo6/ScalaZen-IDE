@@ -30,7 +30,7 @@ fi
 
 mkdir -p "$SBT_PLUGINS"
 SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.3.2")'
-[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE") ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
+[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
 f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
 if [[ "$f" == '0' ]]; then
@@ -42,15 +42,22 @@ fi
 export JDK_HOME="$JAVA_HOME"
 JAVA="$JAVA_HOME/bin/java"
 if [ ! -x "$JAVA" ] ; then
-    error ":java-home is not correct, $JAVA is not the java binary."
+    error "Java home incorrect, $JAVA is not the java binary!"
     exit 1
 fi
 info "Using JDK at $JAVA_HOME"
 
-cd (cd templates/main-template/; sbt "gen-ensime")
-cd (cd examples/PaintingWalkers/; sbt "gen-ensime")
-cd (cd examples/ParametricPointCloud/; sbt "gen-ensime")
-cd (cd examples/WinterCircles/; sbt "gen-ensime")
+FOLDS="templates/ examples/"
+for F in $FOLDS; do
+    pushd $F &>/dev/null
+    for D in $(ls -d */); do
+        pushd $D &>/dev/null
+        info "Building $(pwd)"
+        sbt "gen-ensime" 1>/dev/null
+        popd &>/dev/null
+    done
+    popd &>/dev/null
+done
 
 RESOLUTION_DIR="$(pwd -P)"/ensime-server
 CLASSPATH_FILE="$RESOLUTION_DIR/classpath"
@@ -89,6 +96,6 @@ sbt.version=0.13.9
 EOF
 
 cd "$RESOLUTION_DIR"
-info "Resolving, log available in $CLASSPATH_LOG"
+info "Resolving, log available in $CLASSPATH_LOG. This may take a while..."
 sbt saveClasspath > "$CLASSPATH_LOG"
 info "Done!"
