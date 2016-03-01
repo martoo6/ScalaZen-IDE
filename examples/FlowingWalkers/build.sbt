@@ -2,11 +2,11 @@ name := "ScalaJS_Template"
 
 version := "1.0"
 
-scalaVersion  := "2.11.2"
+scalaVersion  := "2.11.7"
 
 enablePlugins(ScalaJSPlugin)
 
-libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.0"
+libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.0"
 
 //ScalaJSKeys.jsDependencies += scala.scalajs.sbtplugin.RuntimeDOM
 
