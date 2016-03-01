@@ -15,15 +15,23 @@ error() {
 
 if [[ ! $(which sbt) ]]; then
     info "SBT not in PATH, installing..."
-    if [[ ! -f /etc/apt/sources.list.d/sbt.list ]]; then
-        info "Adding SBT sources list and apt key..."
-        info "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
-        sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823 >/dev/null
+
+    if [[ uname -s == 'Linux']]
+      if [[ ! -f /etc/apt/sources.list.d/sbt.list ]]; then
+          info "Adding SBT sources list and apt key..."
+          info "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823 >/dev/null
+      fi
+      info "Updating apt..."
+      sudo apt-get update >/dev/null
+      info "Installing SBT and JDK"
+      sudo apt-get install -y sbt default-jdk >/dev/null
     fi
-    info "Updating apt..."
-    sudo apt-get update >/dev/null
-    info "Installing SBT and JDK"
-    sudo apt-get install -y sbt default-jdk >/dev/null
+
+    if [[ uname -s == 'Darwin']]
+      brew install sbt
+    fi
+
 else
     info "SBT already in PATH. Skipping."
 fi
@@ -32,11 +40,24 @@ mkdir -p "$SBT_PLUGINS"
 SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.3.2")'
 [[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
-f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
-if [[ "$f" == '0' ]]; then
-    ((1<<32)) && B='x64' || B='ia32'
-    info "Installing NW.js $B"
-    wget -qO- "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-linux-$B.tar.gz" | tar xz
+OS = $(uname -s)
+
+if [[ '$OS' == 'Linux']]
+  f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
+  if [[ "$f" == '0' ]]; then
+      ((1<<32)) && B='x64' || B='ia32'
+      info "Installing NW.js $B"
+      wget -qO- "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-linux-$B.tar.gz" | tar xz
+  fi
+fi
+
+if [[ '$OS' == 'Darwin']]
+  f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
+  if [[ "$f" == '0' ]]; then
+      ((1<<32)) && B='x64' || B='ia32'
+      info "Installing NW.js $B"
+      wget -qO- "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-osx-$B.zip" | unzip
+  fi
 fi
 
 export JDK_HOME="$JAVA_HOME"

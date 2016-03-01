@@ -1,0 +1,25 @@
+(
+ :root-dir "/usr/local/dev/Personal/ScalaZen-IDE/examples/Walkers"
+ :cache-dir "/usr/local/dev/Personal/ScalaZen-IDE/examples/Walkers/.ensime_cache"
+ :scala-compiler-jars ("/home/martin/.ivy2/cache/org.scala-lang/scala-compiler/jars/scala-compiler-2.11.2.jar" "/home/martin/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.11.2.jar" "/home/martin/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.11.2.jar" "/home/martin/.ivy2/cache/org.scala-lang/scalap/jars/scalap-2.11.2.jar")
+ :name "main-template"
+ :java-home "/usr/lib/jvm/java-7-oracle"
+ :java-flags ("-Xss2m" "-Xms1024m" "-Xmx1024m" "-XX:ReservedCodeCacheSize=128m" "-XX:MaxPermSize=256m")
+ :reference-source-roots ("/usr/lib/jvm/java-7-oracle/src.zip")
+ :scala-version "2.11.2"
+ :compiler-args ("-Xplugin:/home/martin/.ivy2/cache/org.scala-js/scalajs-compiler_2.11.2/jars/scalajs-compiler_2.11.2-0.6.5.jar" "-feature" "-deprecation" "-Xlint" "-Yinline-warnings" "-Yno-adapted-args" "-Ywarn-dead-code" "-Ywarn-numeric-widen" "-Xfuture" "-Ywarn-unused-import")
+ :formatting-prefs nil
+ :disable-source-monitoring nil
+ :disable-class-monitoring nil
+ :subprojects ((
+   :name "main-template"
+   :source-roots ("/usr/local/dev/Personal/ScalaZen-IDE/examples/Walkers/src/main/java" "/usr/local/dev/Personal/ScalaZen-IDE/examples/Walkers/src/test/java" "/usr/local/dev/Personal/ScalaZen-IDE/examples/Walkers/src/main/scala" "/usr/local/dev/Personal/ScalaZen-IDE/examples/Walkers/src/test/scala")
+   :targets ("/usr/local/dev/Personal/ScalaZen-IDE/examples/Walkers/target/scala-2.11/classes")
+   :test-targets ("/usr/local/dev/Personal/ScalaZen-IDE/examples/Walkers/target/scala-2.11/test-classes")
+   :depends-on-modules nil
+   :compile-deps ("/usr/local/dev/Personal/ScalaZen-IDE/examples/Walkers/lib/ScalaZen-assembly-1.0.jar" "/home/martin/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.11.7.jar" "/home/martin/.ivy2/cache/org.scala-js/scalajs-dom_sjs0.6_2.11/jars/scalajs-dom_sjs0.6_2.11-0.8.0.jar" "/home/martin/.ivy2/cache/org.scala-js/scalajs-library_2.11/jars/scalajs-library_2.11-0.6.5.jar")
+   :runtime-deps nil
+   :test-deps nil
+   :doc-jars ("/home/martin/.ivy2/cache/org.scala-lang/scala-library/docs/scala-library-2.11.7-javadoc.jar" "/home/martin/.ivy2/cache/org.scala-js/scalajs-dom_sjs0.6_2.11/docs/scalajs-dom_sjs0.6_2.11-0.8.0-javadoc.jar" "/home/martin/.ivy2/cache/org.scala-js/scalajs-library_2.11/docs/scalajs-library_2.11-0.6.5-javadoc.jar" "/usr/local/dev/Personal/ScalaZen-IDE/examples/Walkers/target/scala-2.11/scalajs_template_sjs0.6_2.11-1.0-javadoc.jar")
+   :reference-source-roots ("/home/martin/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.11.7-sources.jar" "/home/martin/.ivy2/cache/org.scala-js/scalajs-dom_sjs0.6_2.11/srcs/scalajs-dom_sjs0.6_2.11-0.8.0-sources.jar" "/home/martin/.ivy2/cache/org.scala-js/scalajs-library_2.11/srcs/scalajs-library_2.11-0.6.5-sources.jar")))
+)
