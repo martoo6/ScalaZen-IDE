@@ -13,6 +13,8 @@ error() {
     echo "[!] $@"
 }
 
+sudo apt-get install -y apt-transport-https >/dev/null
+
 OS=$(uname -s)
 
 if [[ ! $(which sbt) ]]; then
