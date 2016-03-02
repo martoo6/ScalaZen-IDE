@@ -13,10 +13,12 @@ error() {
     echo "[!] $@"
 }
 
+OS = $(uname -s)
+
 if [[ ! $(which sbt) ]]; then
     info "SBT not in PATH, installing..."
 
-    if [[ uname -s == 'Linux']]
+    if [[ '$OS' == 'Linux']]
       if [[ ! -f /etc/apt/sources.list.d/sbt.list ]]; then
           info "Adding SBT sources list and apt key..."
           info "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
@@ -28,7 +30,7 @@ if [[ ! $(which sbt) ]]; then
       sudo apt-get install -y sbt default-jdk >/dev/null
     fi
 
-    if [[ uname -s == 'Darwin']]
+    if [[ '$OS' == 'Darwin']]
       brew install sbt
     fi
 
@@ -40,7 +42,7 @@ mkdir -p "$SBT_PLUGINS"
 SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.3.2")'
 [[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
-OS = $(uname -s)
+
 
 if [[ '$OS' == 'Linux']]
   f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
