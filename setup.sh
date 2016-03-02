@@ -18,7 +18,7 @@ OS=$(uname -s)
 if [[ ! $(which sbt) ]]; then
     info "SBT not in PATH, installing..."
 
-    if [[ $OS == 'Linux']]
+    if [[ $OS == 'Linux']]; then
       if [[ ! -f /etc/apt/sources.list.d/sbt.list ]]; then
           info "Adding SBT sources list and apt key..."
           info "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
@@ -30,7 +30,7 @@ if [[ ! $(which sbt) ]]; then
       sudo apt-get install -y sbt default-jdk >/dev/null
     fi
 
-    if [[ $OS == 'Darwin']]
+    if [[ $OS == 'Darwin']]; then
       brew install sbt
     fi
 
@@ -44,7 +44,7 @@ SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.3.2")'
 
 
 
-if [[ $OS == 'Linux']]
+if [[ $OS == 'Linux']]; then
   f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
   if [[ "$f" == '0' ]]; then
       ((1<<32)) && B='x64' || B='ia32'
@@ -53,7 +53,7 @@ if [[ $OS == 'Linux']]
   fi
 fi
 
-if [[ $OS == 'Darwin']]
+if [[ $OS == 'Darwin']]; then
   f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
   if [[ "$f" == '0' ]]; then
       ((1<<32)) && B='x64' || B='ia32'
