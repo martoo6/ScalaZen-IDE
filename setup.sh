@@ -21,7 +21,8 @@ if [[ ! $(which sbt) ]]; then
     if [[ $OS == 'Linux' ]]; then
       if [[ ! -f /etc/apt/sources.list.d/sbt.list ]]; then
           info "Adding SBT sources list and apt key..."
-          info "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+          info "deb https://dl.bintray.com/sbt/debian /"
+          echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
           sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823 >/dev/null
       fi
       info "Updating apt..."
