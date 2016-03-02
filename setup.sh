@@ -29,8 +29,8 @@ if [[ ! $(which sbt) ]]; then
       fi
       info "Updating apt..."
       sudo apt-get update >/dev/null
-      info "Installing SBT and JDK"
-      sudo apt-get install -y sbt default-jdk >/dev/null
+      info "Installing SBT"
+      sudo apt-get install -y sbt >/dev/null
     fi
 
     if [[ $OS == 'Darwin' ]]; then
@@ -40,6 +40,20 @@ if [[ ! $(which sbt) ]]; then
 else
     info "SBT already in PATH. Skipping."
 fi
+
+if [[ ! $(which java) ]]; then
+    info "Java not in PATH, installing..."
+
+    if [[ $OS == 'Linux' ]]; then
+      info "Installing JDK"
+      sudo apt-get install -y default-jdk >/dev/null
+      echo "JAVA_HOME=\"/usr/lib/jvm/open-jdk\"" >> /etc/environment
+      source /etc/environment
+    fi
+else
+    info "Java already in PATH. Skipping."
+fi
+
 
 mkdir -p "$SBT_PLUGINS"
 SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.3.2")'
