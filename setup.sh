@@ -5,6 +5,8 @@ SCALA_VERSION="2.11.2"
 NWJS_VERSION="v0.12.3"
 SBT_PLUGINS="$HOME/.sbt/0.13/plugins"
 SBT_PLUGINS_FILE="$SBT_PLUGINS/plugins.sbt"
+CURRENT_DIR="$(pwd -P)"
+INSTALL_LOG="$CURRENT_DIR/install.log"
 
 info(){
     echo "[-] $@"
@@ -71,7 +73,7 @@ JAVA="$JAVA_HOME/bin/java"
 if [ ! -x "$JAVA" ] ; then
     if [[ $OS == 'Linux' ]]; then
       info "JAVA_HOME not found. Installing default JDK"
-      sudo apt-get install -y default-jdk >/dev/null
+      sudo apt-get install -y default-jdk >"$INSTALL_LOG"
       echo "JAVA_HOME=\"/usr/lib/jvm/open-jdk\"" | sudo tee -a /etc/environment
       source /etc/environment
     fi
@@ -84,7 +86,8 @@ for F in $FOLDS; do
     for D in $(ls -d */); do
         pushd $D &>/dev/null
         info "Building $(pwd)"
-        sbt "gen-ensime" 1>/dev/null
+        #Should save in a list of PIDs an check that all of them are finished
+        sbt "gen-ensime" >"$INSTALL_LOG" &
         popd &>/dev/null
     done
     popd &>/dev/null
@@ -130,5 +133,7 @@ cd "$RESOLUTION_DIR"
 info "Resolving, log available in $CLASSPATH_LOG. This may take a while..."
 sbt saveClasspath > "$CLASSPATH_LOG"
 
+info "Waiting for NW.js to finish download.."
 wait $PID_NW
+
 info "Done!"
