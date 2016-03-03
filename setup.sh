@@ -61,20 +61,6 @@ else
     info "SBT already in PATH. Skipping."
 fi
 
-if [[ ! $(which java) ]]; then
-    info "Java not in PATH, installing..."
-
-    if [[ $OS == 'Linux' ]]; then
-      info "Installing JDK"
-      sudo apt-get install -y default-jdk >/dev/null
-      echo "JAVA_HOME=\"/usr/lib/jvm/open-jdk\"" >> /etc/environment
-      source /etc/environment
-    fi
-else
-    info "Java already in PATH. Skipping."
-fi
-
-
 mkdir -p "$SBT_PLUGINS"
 SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.3.2")'
 [[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
@@ -83,8 +69,12 @@ SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.3.2")'
 export JDK_HOME="$JAVA_HOME"
 JAVA="$JAVA_HOME/bin/java"
 if [ ! -x "$JAVA" ] ; then
-    error "Java home incorrect, $JAVA is not the java binary!"
-    exit 1
+    if [[ $OS == 'Linux' ]]; then
+      info "JAVA_HOME not found. Installing default JDK"
+      sudo apt-get install -y default-jdk >/dev/null
+      echo "JAVA_HOME=\"/usr/lib/jvm/open-jdk\"" >> /etc/environment
+      source /etc/environment
+    fi
 fi
 info "Using JDK at $JAVA_HOME"
 
