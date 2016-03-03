@@ -13,9 +13,29 @@ error() {
     echo "[!] $@"
 }
 
-sudo apt-get install -y apt-transport-https >/dev/null
-
 OS=$(uname -s)
+
+if [[ $OS == 'Linux' ]]; then
+  f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
+  if [[ "$f" == '0' ]]; then
+      ((1<<32)) && B='x64' || B='ia32'
+      info "Installing NW.js $B"
+      wget -qO- "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-linux-$B.tar.gz" | tar xz &
+      PID_NW=$!
+  fi
+fi
+
+if [[ $OS == 'Darwin' ]]; then
+  f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
+  if [[ "$f" == '0' ]]; then
+      ((1<<32)) && B='x64' || B='ia32'
+      info "Installing NW.js $B"
+      wget -qO- "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-osx-$B.zip" | unzip &
+      PID_NW=$!
+  fi
+fi
+
+sudo apt-get install -y apt-transport-https >/dev/null
 
 if [[ ! $(which sbt) ]]; then
     info "SBT not in PATH, installing..."
@@ -59,25 +79,6 @@ mkdir -p "$SBT_PLUGINS"
 SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.3.2")'
 [[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
-
-
-if [[ $OS == 'Linux' ]]; then
-  f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
-  if [[ "$f" == '0' ]]; then
-      ((1<<32)) && B='x64' || B='ia32'
-      info "Installing NW.js $B"
-      wget -qO- "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-linux-$B.tar.gz" | tar xz
-  fi
-fi
-
-if [[ $OS == 'Darwin' ]]; then
-  f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
-  if [[ "$f" == '0' ]]; then
-      ((1<<32)) && B='x64' || B='ia32'
-      info "Installing NW.js $B"
-      wget -qO- "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-osx-$B.zip" | unzip
-  fi
-fi
 
 export JDK_HOME="$JAVA_HOME"
 JAVA="$JAVA_HOME/bin/java"
@@ -138,4 +139,6 @@ EOF
 cd "$RESOLUTION_DIR"
 info "Resolving, log available in $CLASSPATH_LOG. This may take a while..."
 sbt saveClasspath > "$CLASSPATH_LOG"
+
+wait $PID_NW
 info "Done!"
