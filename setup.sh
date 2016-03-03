@@ -72,8 +72,8 @@ if [ ! -x "$JAVA" ] ; then
     if [[ $OS == 'Linux' ]]; then
       info "JAVA_HOME not found. Installing default JDK"
       sudo apt-get install -y default-jdk >/dev/null
-      echo "JAVA_HOME=\"/usr/lib/jvm/open-jdk\"" >> /etc/environment
-      source /etc/environment
+      sudo echo "JAVA_HOME=\"/usr/lib/jvm/open-jdk\"" >> /etc/environment
+      sudo source /etc/environment
     fi
 fi
 info "Using JDK at $JAVA_HOME"
