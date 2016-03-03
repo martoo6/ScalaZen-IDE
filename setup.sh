@@ -86,8 +86,8 @@ for F in $FOLDS; do
     for D in $(ls -d */); do
         pushd $D &>/dev/null
         info "Building $(pwd)"
-        #Should save in a list of PIDs an check that all of them are finished
-        sbt "gen-ensime" >"$INSTALL_LOG" &
+        #Parallel and save in a list of PIDs an check that all of them are finished ?
+        sbt "gen-ensime" >"$INSTALL_LOG"
         popd &>/dev/null
     done
     popd &>/dev/null
@@ -108,8 +108,9 @@ ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
 // allows local builds of scala
 resolvers += Resolver.mavenLocal
 resolvers += Resolver.sonatypeRepo("snapshots")
-resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+//resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 resolvers += "Akka Repo" at "http://repo.akka.io/repository"
+resolvers += "Netbeans" at "http://bits.netbeans.org/maven2"
 libraryDependencies ++= Seq(
   "org.ensime" %% "ensime" % "${ENSIME_VERSION}",
   "org.scala-lang" % "scala-compiler" % scalaVersion.value force(),
