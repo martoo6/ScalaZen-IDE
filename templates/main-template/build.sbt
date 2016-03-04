@@ -2,7 +2,7 @@ name := "ScalaJS_Template"
 
 version := "1.0"
 
-scalaVersion  := "2.11.2"
+scalaVersion  := "2.11.7"
 
 enablePlugins(ScalaJSPlugin)
 
