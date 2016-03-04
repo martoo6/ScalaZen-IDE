@@ -46,7 +46,7 @@ JAVA="$JAVA_HOME/bin/java"
 if [ ! -x "$JAVA" ] ; then
     if [[ $OS == 'Linux' ]]; then
       info "JAVA_HOME not found. Installing default JDK"
-      sudo apt-get install -y default-jdk >>"$INSTALL_LOG"
+      sudo apt-get install -y --no-install-recommends default-jdk >>"$INSTALL_LOG"
       echo "JAVA_HOME=\"/usr/lib/jvm/default-java\"" | sudo tee -a /etc/environment
       source /etc/environment
     fi
