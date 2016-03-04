@@ -37,6 +37,18 @@ if [[ $OS == 'Darwin' ]]; then
   fi
 fi
 
+export JDK_HOME="$JAVA_HOME"
+JAVA="$JAVA_HOME/bin/java"
+if [ ! -x "$JAVA" ] ; then
+    if [[ $OS == 'Linux' ]]; then
+      info "JAVA_HOME not found. Installing default JDK"
+      sudo apt-get install -y default-jdk >>"$INSTALL_LOG"
+      echo "JAVA_HOME=\"/usr/lib/jvm/open-jdk\"" | sudo tee -a /etc/environment
+      source /etc/environment
+    fi
+fi
+info "Using JDK at $JAVA_HOME"
+
 sudo apt-get install -y apt-transport-https >/dev/null
 
 if [[ ! $(which sbt) ]]; then
@@ -69,19 +81,6 @@ SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
 
 SBT_PLUGIN='addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M9")'
 [[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
-
-
-export JDK_HOME="$JAVA_HOME"
-JAVA="$JAVA_HOME/bin/java"
-if [ ! -x "$JAVA" ] ; then
-    if [[ $OS == 'Linux' ]]; then
-      info "JAVA_HOME not found. Installing default JDK"
-      sudo apt-get install -y default-jdk >>"$INSTALL_LOG"
-      echo "JAVA_HOME=\"/usr/lib/jvm/open-jdk\"" | sudo tee -a /etc/environment
-      source /etc/environment
-    fi
-fi
-info "Using JDK at $JAVA_HOME"
 
 FOLDS="templates/ examples/"
 for F in $FOLDS; do
