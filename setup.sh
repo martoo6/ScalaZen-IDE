@@ -64,7 +64,7 @@ else
 fi
 
 mkdir -p "$SBT_PLUGINS"
-SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.3.2")'
+SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
 [[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
 
@@ -111,6 +111,7 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 //resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 resolvers += "Akka Repo" at "http://repo.akka.io/repository"
 resolvers += "Netbeans" at "http://bits.netbeans.org/maven2"
+
 libraryDependencies ++= Seq(
   "org.ensime" %% "ensime" % "${ENSIME_VERSION}",
   "org.scala-lang" % "scala-compiler" % scalaVersion.value force(),
@@ -127,7 +128,7 @@ saveClasspathTask := {
 EOF
 
 cat <<EOF > "$RESOLUTION_DIR/project/build.properties"
-sbt.version=0.13.9
+sbt.version=0.13.11
 EOF
 
 cd "$RESOLUTION_DIR"
