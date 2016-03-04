@@ -37,19 +37,19 @@ if [[ $OS == 'Darwin' ]]; then
   fi
 fi
 
+sudo apt-get install -y apt-transport-https >/dev/null
+
 export JDK_HOME="$JAVA_HOME"
 JAVA="$JAVA_HOME/bin/java"
 if [ ! -x "$JAVA" ] ; then
     if [[ $OS == 'Linux' ]]; then
       info "JAVA_HOME not found. Installing default JDK"
       sudo apt-get install -y default-jdk >>"$INSTALL_LOG"
-      echo "JAVA_HOME=\"/usr/lib/jvm/open-jdk\"" | sudo tee -a /etc/environment
+      echo "JAVA_HOME=\"/usr/lib/jvm/default-java\"" | sudo tee -a /etc/environment
       source /etc/environment
     fi
 fi
 info "Using JDK at $JAVA_HOME"
-
-sudo apt-get install -y apt-transport-https >/dev/null
 
 if [[ ! $(which sbt) ]]; then
     info "SBT not in PATH, installing..."
@@ -75,14 +75,17 @@ else
     info "SBT already in PATH. Skipping."
 fi
 
-mkdir -p "$SBT_PLUGINS"
-SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
-[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
-
 SBT_PLUGIN='addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M9")'
 [[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
-sbt sbtVersion
+info "Installing coursier"
+sbt sbtVersion >>"$INSTALL_LOG"
+
+info "Adding ensime-sbt plugin"
+
+mkdir -p "$SBT_PLUGINS"
+SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
+[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
 RESOLUTION_DIR="$(pwd -P)"/ensime-server
 CLASSPATH_FILE="$RESOLUTION_DIR/classpath"
@@ -92,6 +95,7 @@ mkdir -p "$RESOLUTION_DIR"/project
 
 cat <<EOF > "$RESOLUTION_DIR/build.sbt"
 import sbt._
+
 import IO._
 import java.io._
 scalaVersion := "${SCALA_VERSION}"
@@ -122,11 +126,14 @@ cat <<EOF > "$RESOLUTION_DIR/project/build.properties"
 sbt.version=0.13.11
 EOF
 
-cd "$RESOLUTION_DIR"
+pushd $RESOLUTION_DIR &>/dev/null
 info "Resolving, log available in $CLASSPATH_LOG. This may take a while..."
 sbt saveClasspath > "$CLASSPATH_LOG" 2>&1 &
 PID_ENSIME_SERVER=$!
+popd &>/dev/null
 
+
+info "Configuring examples. This may take a while..."
 FOLDS="templates/ examples/"
 for F in $FOLDS; do
     pushd $F &>/dev/null
