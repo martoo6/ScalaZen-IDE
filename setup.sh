@@ -52,7 +52,7 @@ if [[ ! $(which sbt) ]]; then
       info "Updating apt..."
       sudo apt-get update >/dev/null
       info "Installing SBT"
-      sudo apt-get install -y sbt >/dev/null
+      sudo apt-get install -y sbt >>"$INSTALL_LOG"
     fi
 
     if [[ $OS == 'Darwin' ]]; then
@@ -73,7 +73,7 @@ JAVA="$JAVA_HOME/bin/java"
 if [ ! -x "$JAVA" ] ; then
     if [[ $OS == 'Linux' ]]; then
       info "JAVA_HOME not found. Installing default JDK"
-      sudo apt-get install -y default-jdk >"$INSTALL_LOG"
+      sudo apt-get install -y default-jdk >>"$INSTALL_LOG"
       echo "JAVA_HOME=\"/usr/lib/jvm/open-jdk\"" | sudo tee -a /etc/environment
       source /etc/environment
     fi
@@ -87,7 +87,7 @@ for F in $FOLDS; do
         pushd $D &>/dev/null
         info "Building $(pwd)"
         #Parallel and save in a list of PIDs an check that all of them are finished ?
-        sbt "gen-ensime" >"$INSTALL_LOG"
+        sbt "gen-ensime" >>"$INSTALL_LOG"
         popd &>/dev/null
     done
     popd &>/dev/null
