@@ -37,7 +37,9 @@ if [[ $OS == 'Darwin' ]]; then
   fi
 fi
 
-sudo apt-get install -y apt-transport-https >/dev/null
+if [[ $OS == 'Linux' ]]; then
+  sudo apt-get install -y apt-transport-https >/dev/null
+fi
 
 export JDK_HOME="$JAVA_HOME"
 JAVA="$JAVA_HOME/bin/java"
@@ -75,6 +77,7 @@ else
     info "SBT already in PATH. Skipping."
 fi
 
+mkdir -p "$SBT_PLUGINS"
 SBT_PLUGIN='addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M9")'
 [[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
@@ -83,7 +86,6 @@ sbt sbtVersion >>"$INSTALL_LOG"
 
 info "Adding ensime-sbt plugin"
 
-mkdir -p "$SBT_PLUGINS"
 SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
 [[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
