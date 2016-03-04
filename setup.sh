@@ -82,18 +82,7 @@ SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
 SBT_PLUGIN='addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M9")'
 [[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
-FOLDS="templates/ examples/"
-for F in $FOLDS; do
-    pushd $F &>/dev/null
-    for D in $(ls -d */); do
-        pushd $D &>/dev/null
-        info "Building $(pwd)"
-        #Parallel and save in a list of PIDs an check that all of them are finished ?
-        sbt "gen-ensime" >>"$INSTALL_LOG"
-        popd &>/dev/null
-    done
-    popd &>/dev/null
-done
+sbt sbtVersion
 
 RESOLUTION_DIR="$(pwd -P)"/ensime-server
 CLASSPATH_FILE="$RESOLUTION_DIR/classpath"
@@ -110,7 +99,7 @@ ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
 // allows local builds of scala
 resolvers += Resolver.mavenLocal
 resolvers += Resolver.sonatypeRepo("snapshots")
-//resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 resolvers += "Akka Repo" at "http://repo.akka.io/repository"
 resolvers += "Netbeans" at "http://bits.netbeans.org/maven2"
 
@@ -135,9 +124,25 @@ EOF
 
 cd "$RESOLUTION_DIR"
 info "Resolving, log available in $CLASSPATH_LOG. This may take a while..."
-sbt saveClasspath > "$CLASSPATH_LOG"
+sbt saveClasspath > "$CLASSPATH_LOG" 2>&1 &
+PID_ENSIME_SERVER=$!
+
+FOLDS="templates/ examples/"
+for F in $FOLDS; do
+    pushd $F &>/dev/null
+    for D in $(ls -d */); do
+        pushd $D &>/dev/null
+        info "Building $(pwd)"
+        #Parallel and save in a list of PIDs an check that all of them are finished ?
+        sbt "gen-ensime" >>"$INSTALL_LOG" 2>&1
+        popd &>/dev/null
+    done
+    popd &>/dev/null
+done
 
 info "Waiting for NW.js to finish download.."
 wait $PID_NW
+info "Waiting for Ensime Server to finish download.."
+wait $PID_ENSIME_SERVER
 
 info "Done!"
