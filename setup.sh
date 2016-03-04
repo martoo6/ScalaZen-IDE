@@ -82,6 +82,24 @@ SBT_PLUGIN='addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % 
 [[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
 info "Installing coursier"
+
+curl -L -o coursier https://git.io/vgvpD && chmod +x coursier
+
+#Lets download fast ! Copy to .ivy2 later somehow
+#./coursier fetch org.scala-lang:scala-library:2.10.6 org.scala-sbt:launcher-interface:1.0.0-M1 org.scala-lang:scala-compiler:2.10.6 org.scala-lang:scala-reflect:2.10.6 org.scala-sbt:serialization_2.10:0.1.2
+#Should add to coursier
+#https://repo1.maven.org/maven2/jline/jline/2.13/jline-2.13.jar ...
+#https://repo1.maven.org/maven2/org/fusesource/jansi/jansi/1.11/jansi-1.11.jar ...
+#https://repo1.maven.org/maven2/com/jcraft/jsch/0.1.46/jsch-0.1.46.jar ...
+#https://repo1.maven.org/maven2/org/scala-lang/modules/scala-pickling_2.10/0.10.1/scala-pickling_2.10-0.10.1.jar ...
+#https://repo1.maven.org/maven2/org/json4s/json4s-core_2.10/3.2.10/json4s-core_2.10-3.2.10.jar ...
+#https://repo1.maven.org/maven2/org/spire-math/jawn-parser_2.10/0.6.0/jawn-parser_2.10-0.6.0.jar ...
+#https://repo1.maven.org/maven2/org/spire-math/json4s-support_2.10/0.6.0/json4s-support_2.10-0.6.0.jar ...
+#https://repo1.maven.org/maven2/org/scalamacros/quasiquotes_2.10/2.0.1/quasiquotes_2.10-2.0.1.jar ...
+#https://repo1.maven.org/maven2/org/json4s/json4s-ast_2.10/3.2.10/json4s-ast_2.10-3.2.10.jar ...
+#https://repo1.maven.org/maven2/com/thoughtworks/paranamer/paranamer/2.6/paranamer-2.6.jar ...
+#https://repo1.maven.org/maven2/org/scala-sbt/test-interface/1.0/test-interface-1.0.jar ...
+
 sbt sbtVersion >>"$INSTALL_LOG"
 
 info "Adding ensime-sbt plugin"
@@ -129,9 +147,8 @@ sbt.version=0.13.11
 EOF
 
 pushd $RESOLUTION_DIR &>/dev/null
-info "Resolving, log available in $CLASSPATH_LOG. This may take a while..."
-sbt saveClasspath > "$CLASSPATH_LOG" 2>&1 &
-PID_ENSIME_SERVER=$!
+info "Installing Ensime, log available in $CLASSPATH_LOG. This may take a while..."
+sbt saveClasspath > "$CLASSPATH_LOG" 2>&1
 popd &>/dev/null
 
 
