@@ -361,7 +361,7 @@ $( document ).ready( function(){
             console.log(`[ENSIME] - stdout: ${ensimeData}`);
 
             //Means, server is ready for action
-            if(ensimeData.toString().indexOf('Setting up new file watchers') > -1){
+            if(ensimeData.toString().indexOf('created the search database') > -1){
                 fs.readFile(path.resolve(newName) + '/.ensime_cache/http',function (err, fileData) {
                     //Open Websockets for compile/autocomplete/etc
                     socket = new WebSocket('ws://127.0.0.1:' + fileData.toString() + '/jerky');
