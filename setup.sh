@@ -108,26 +108,27 @@ mkdir -p "$SBT_PLUGINS"
 #[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
 
+info "Installing SBT and Coursier. This will take a while."
+mkdir -p "coursier-dummy-project"
+mkdir -p "coursier-dummy-project"/project
+echo "" > coursier-dummy-project/build.sbt
+echo 'addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M9")' > coursier-dummy-project/project/plugins.sbt
+echo "sbt.version=0.13.11" > coursier-dummy-project/project/build.properties
 
- pushd $TMPDIR &>/dev/null
- info "Installing SBT and Coursier. This will take a while."
- mkdir -p "coursier-dummy-project"
- mkdir -p "coursier-dummy-project"/project
- echo "" > coursier-dummy-project/build.sbt
+pushd coursier-dummy-project &>/dev/null
+cat <<EOF > "build.sbt"
+name := "coursier-dummy-project"
 
- cat <<EOF > "build.sbt"
- name := "coursier-dummy-project"
+version := "1.0"
 
- version := "1.0"
+scalaVersion := "2.11.7"
+EOF
 
- scalaVersion := "2.11.7"
- EOF
 
- echo 'addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M9")' > coursier-dummy-project/project/plugins.sbt
- echo "sbt.version=0.13.11" > coursier-dummy-project/project/build.properties
- sbt sbtVersion > "$INSTALL_LOG" 2>&1
- popd &>/dev/null
+sbt sbtVersion > "$INSTALL_LOG" 2>&1
+popd &>/dev/null
 
+rm -rf coursier-dummy-project
 
 RESOLUTION_DIR="$(pwd -P)"/ensime-server
 CLASSPATH_FILE="$RESOLUTION_DIR/classpath"
