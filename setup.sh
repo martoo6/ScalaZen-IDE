@@ -113,6 +113,16 @@ mkdir -p "$SBT_PLUGINS"
  info "Installing SBT and Coursier. This will take a while."
  mkdir -p "coursier-dummy-project"
  mkdir -p "coursier-dummy-project"/project
+ echo "" > coursier-dummy-project/build.sbt
+
+ cat <<EOF > "build.sbt"
+ name := "coursier-dummy-project"
+
+ version := "1.0"
+
+ scalaVersion := "2.11.7"
+ EOF
+
  echo 'addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M9")' > coursier-dummy-project/project/plugins.sbt
  echo "sbt.version=0.13.11" > coursier-dummy-project/project/build.properties
  sbt sbtVersion > "$INSTALL_LOG" 2>&1
@@ -174,7 +184,7 @@ for F in $FOLDS; do
         pushd $D &>/dev/null
         info "Building $(pwd)"
         #Parallel and save in a list of PIDs an check that all of them are finished ?
-        sbt "gen-ensime" >>"$INSTALL_LOG" 2>&1 &
+        sbt "gen-ensime" >>"$INSTALL_LOG" 2>&1
         popd &>/dev/null
     done
     popd &>/dev/null
