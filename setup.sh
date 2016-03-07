@@ -107,6 +107,18 @@ mkdir -p "$SBT_PLUGINS"
 #SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
 #[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
+
+
+ pushd $TMPDIR &>/dev/null
+ info "Installing SBT and Coursier. This will take a while."
+ mkdir -p "coursier-dummy-project"
+ mkdir -p "coursier-dummy-project"/project
+ echo 'addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M9")' > coursier-dummy-project/project/plugins.sbt
+ echo "sbt.version=0.13.11" > coursier-dummy-project/project/build.properties
+ sbt sbtVersion > "$INSTALL_LOG" 2>&1
+ popd &>/dev/null
+
+
 RESOLUTION_DIR="$(pwd -P)"/ensime-server
 CLASSPATH_FILE="$RESOLUTION_DIR/classpath"
 CLASSPATH_LOG="$RESOLUTION_DIR/sbt.log"
@@ -162,7 +174,7 @@ for F in $FOLDS; do
         pushd $D &>/dev/null
         info "Building $(pwd)"
         #Parallel and save in a list of PIDs an check that all of them are finished ?
-        sbt "gen-ensime" >>"$INSTALL_LOG" 2>&1
+        sbt "gen-ensime" >>"$INSTALL_LOG" 2>&1 &
         popd &>/dev/null
     done
     popd &>/dev/null
@@ -170,7 +182,6 @@ done
 
 info "Waiting for NW.js to finish download.."
 wait $PID_NW
-info "Waiting for Ensime Server to finish download.."
-wait $PID_ENSIME_SERVER
+wait
 
 info "Done!"
