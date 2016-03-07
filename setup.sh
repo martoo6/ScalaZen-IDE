@@ -78,12 +78,12 @@ else
 fi
 
 mkdir -p "$SBT_PLUGINS"
-SBT_PLUGIN='addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M9")'
-[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
+#SBT_PLUGIN='addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M9")'
+#[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
-info "Installing coursier"
+#info "Installing coursier"
 
-curl -L -o coursier https://git.io/vgvpD && chmod +x coursier
+#curl -L -o coursier https://git.io/vgvpD && chmod +x coursier
 
 #Lets download fast ! Copy to .ivy2 later somehow
 #./coursier fetch org.scala-lang:scala-library:2.10.6 org.scala-sbt:launcher-interface:1.0.0-M1 org.scala-lang:scala-compiler:2.10.6 org.scala-lang:scala-reflect:2.10.6 org.scala-sbt:serialization_2.10:0.1.2
@@ -100,18 +100,20 @@ curl -L -o coursier https://git.io/vgvpD && chmod +x coursier
 #https://repo1.maven.org/maven2/com/thoughtworks/paranamer/paranamer/2.6/paranamer-2.6.jar ...
 #https://repo1.maven.org/maven2/org/scala-sbt/test-interface/1.0/test-interface-1.0.jar ...
 
-sbt sbtVersion >>"$INSTALL_LOG"
+#sbt sbtVersion >>"$INSTALL_LOG"
 
-info "Adding ensime-sbt plugin"
+#info "Adding ensime-sbt plugin"
 
-SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
-[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
+#SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
+#[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
 RESOLUTION_DIR="$(pwd -P)"/ensime-server
 CLASSPATH_FILE="$RESOLUTION_DIR/classpath"
 CLASSPATH_LOG="$RESOLUTION_DIR/sbt.log"
 mkdir -p "ensime-server"
 mkdir -p "$RESOLUTION_DIR"/project
+
+echo 'addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M9")' > "$RESOLUTION_DIR"/project/plugins.sbt
 
 cat <<EOF > "$RESOLUTION_DIR/build.sbt"
 import sbt._
