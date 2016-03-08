@@ -16,6 +16,9 @@ error() {
 }
 
 OS=$(uname -s)
+if [[ $OS == *"CYGWIN"* ]]; then
+  OS="Windows"
+fi
 
 if [[ $OS == 'Linux' ]]; then
   f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
@@ -37,8 +40,14 @@ if [[ $OS == 'Darwin' ]]; then
   fi
 fi
 
-if [[ $OS == 'Linux' ]]; then
-  sudo apt-get install -y apt-transport-https >/dev/null
+if [[ $OS == 'Windows' ]]; then
+  f=$(ls nwjs-$NWJS_VERSION-win-* 2>/dev/null | wc -l)
+  if [[ "$f" == '0' ]]; then
+      ((1<<32)) && B='x64' || B='ia32'
+      info "Installing NW.js $B"
+      wget -qO- "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-win-$B.zip" | unzip &
+      PID_NW=$!
+  fi
 fi
 
 export JDK_HOME="$JAVA_HOME"
@@ -49,6 +58,14 @@ if [ ! -x "$JAVA" ] ; then
       sudo apt-get install -y --no-install-recommends default-jdk >>"$INSTALL_LOG"
       echo "JAVA_HOME=\"/usr/lib/jvm/default-java\"" | sudo tee -a /etc/environment
       source /etc/environment
+    fi
+    if [[ $OS == 'Darwin' ]]; then
+      error "You have to download and install Java prior running this script. Remember to configure the JAVA_HOME enviroment variable."
+      exit 1
+    fi
+    if [[ $OS == 'Windows' ]]; then
+      error "You have to download and install Java prior running this script. Remember to configure the JAVA_HOME enviroment variable."
+      exit 1
     fi
 fi
 info "Using JDK at $JAVA_HOME"
@@ -63,6 +80,7 @@ if [[ ! $(which sbt) ]]; then
           echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
           sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823 >/dev/null
       fi
+      sudo apt-get install -y apt-transport-https >/dev/null
       info "Updating apt..."
       sudo apt-get update >/dev/null
       info "Installing SBT"
@@ -70,7 +88,12 @@ if [[ ! $(which sbt) ]]; then
     fi
 
     if [[ $OS == 'Darwin' ]]; then
-      brew install sbt
+      brew install sbt >>"$INSTALL_LOG"
+    fi
+
+    if [[ $OS == 'Windows' ]]; then
+      error "You have to download and install SBT prior running this script."
+      exit 1
     fi
 
 else
