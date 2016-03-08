@@ -29,18 +29,3 @@ class ThreeJSApp extends BasicCanvas with DrawingUtils with PerlinNoise{
     geo.colorsNeedUpdate=true
   }
 }
-
-//Following code must be hidden in another file
-
-@JSExport
-object App extends JSApp{
-
-  override def main(): Unit = {
-
-  }
-
-  @JSExport
-  def run(c:Canvas):Unit = {
-    c.run()
-  }
-}

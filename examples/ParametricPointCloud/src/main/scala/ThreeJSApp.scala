@@ -46,18 +46,3 @@ class ThreeJSApp extends BasicCanvas with DrawingUtils with SimplexNoise {
     group.setRotationFromAxisAngle(yAxis, map(frameCount, 0, 60 * 5, 0, TWO_PI))
   }
 }
-
-//Following code must be hidden in another file
-
-@JSExport
-object App extends JSApp{
-
-  override def main(): Unit = {
-
-  }
-
-  @JSExport
-  def run(c:Canvas):Unit = {
-    c.run()
-  }
-}
