@@ -20,6 +20,15 @@ if [[ $OS == *"CYGWIN"* ]]; then
   OS="Windows"
 fi
 
+if [[ $OS == 'Darwin' ]]; then
+  if [[ ! $(which brew) ]] || [[ $(which brew) == 'sbt not found' ]]; then
+    info "Installing Homebrew and Homebrew utilities"
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  fi
+  info "Installing Homebrew utilities"
+  brew install coreutils
+fi
+
 if [[ $OS == 'Linux' ]]; then
   f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
   if [[ "$f" == '0' ]]; then
@@ -33,6 +42,7 @@ fi
 if [[ $OS == 'Darwin' ]]; then
   f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
   if [[ "$f" == '0' ]]; then
+      brew install wget
       ((1<<32)) && B='x64' || B='ia32'
       info "Installing NW.js $B"
       wget -qO- "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-osx-$B.zip" | unzip &
@@ -70,7 +80,7 @@ if [ ! -x "$JAVA" ] ; then
 fi
 info "Using JDK at $JAVA_HOME"
 
-if [[ ! $(which sbt) ]]; then
+if [[ ! $(which sbt) ]] || [[ $(which sbt) == 'sbt not found' ]]; then
     info "SBT not in PATH, installing..."
 
     if [[ $OS == 'Linux' ]]; then
