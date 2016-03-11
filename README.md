@@ -2,6 +2,11 @@
 
 ScalaZen IDE, make visual WebGL Apps with Scala and ScalaZen lib (Based on ThreeJs)
 
+## Mac OS Pre-Requisites
+```
+# Install Java 6 or higher and set JAVA_HOME enviroment variable
+```
+
 ## Installing
 ```
 # ./setup.sh
