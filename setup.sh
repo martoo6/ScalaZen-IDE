@@ -27,6 +27,8 @@ if [[ $OS == 'Darwin' ]]; then
   fi
   info "Installing Homebrew utilities"
   brew install coreutils
+  brew install grep --with-default-names
+  brew install gnu-sed --with-default-names
 fi
 
 if [[ $OS == 'Linux' ]]; then

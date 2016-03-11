@@ -13,7 +13,18 @@
 
 ENSIME_VERSION="0.9.10-SNAPSHOT"
 
-ENSIME_CONFIG=`readlink -f $1`
+
+S=$(uname -s)
+if [[ $OS == *"CYGWIN"* ]]; then
+  OS="Windows"
+fi
+
+if [[ $OS == 'Darwin' ]]; then
+  ENSIME_CONFIG=`greadlink -f $1`
+else
+  ENSIME_CONFIG=`readlink -f $1`
+fi
+
 
 if [ ! -f "$ENSIME_CONFIG" ] ; then
     echo "No .ensime provided"
