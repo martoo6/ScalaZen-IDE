@@ -20,7 +20,7 @@ $( document ).ready( function(){
     var callId = 0;
 
     var socket;
-    var ensime; 
+    var ensime;
 
     function removeCache(folderPath){
         console.log('Ready to remove: ' + folderPath);
@@ -28,7 +28,7 @@ $( document ).ready( function(){
         folders.filter(function(f){ return fs.statSync(folderPath + '/' +f).isDirectory(); })
             .forEach(function(folder){
             try{
-                wrench.rmdirSyncRecursive(folderPath + '/' + folder + '/.ensime_cache');    
+                wrench.rmdirSyncRecursive(folderPath + '/' + folder + '/.ensime_cache');
                 console.log('Removed: ' + folder + '\'s cache');
             }catch(e){
                 //Do nothing
@@ -57,12 +57,12 @@ $( document ).ready( function(){
                 console.log("Server Killed");
                 if(typeof sbtProc !== 'undefined'){
                     kill(sbtProc.pid, 'SIGKILL',function(err){
-                        console.log("SBT Killed");                    
+                        console.log("SBT Killed");
                         gui.App.quit();
                     });
                 }else{
                     gui.App.quit();
-                }   
+                }
             });
         }else{
             gui.App.quit();
@@ -84,11 +84,11 @@ $( document ).ready( function(){
                 console.log("Server Killed");
                 if(typeof sbtProc !== 'undefined'){
                     kill(sbtProc.pid, 'SIGKILL',function(err){
-                        console.log("SBT Killed");                    
-                        
-                        
+                        console.log("SBT Killed");
+
+
                     });
-                }   
+                }
             });
         }
 
@@ -99,11 +99,11 @@ $( document ).ready( function(){
 
     var langTools = ace.require("ace/ext/language_tools");
     var editor = ace.edit("editor");
-    
+
     editor.getSession().setMode("ace/mode/scala");
     editor.setDisplayIndentGuides(true);
 
-    
+
     var scalaCompleter = {
         getCompletions: function(editor, session, pos, prefix, callback) {
             if (typeof socket !== 'undefined') {
@@ -112,12 +112,12 @@ $( document ).ready( function(){
                 var req = JSON.stringify({
                 "callId" : callId,
                 "req" : {
-                		"point": editor.session.doc.positionToIndex(pos), 
+                		"point": editor.session.doc.positionToIndex(pos),
                 		"maxResults":100,
                         "typehint":"CompletionsReq",
                         "caseSens":true,
                         "fileInfo": {
-                        			"file": path.resolve(newName + myApp), 
+                        			"file": path.resolve(newName + myApp),
                         			"contents": editor.getValue()
                         			},
                         "reload":false
@@ -193,9 +193,9 @@ $( document ).ready( function(){
                                                     })
                                                     .map(function(e){
                             var printName = e.name
-                            var compoundName = e.name 
+                            var compoundName = e.name
                             if(e.typeSig.sections.length > 0){
-                                printName+='()'; 
+                                printName+='()';
                                 var lst = e.typeSig.sections[0].map(function(x){return x[0]+':'+x[1] })
                                 compoundName += '(' + lst.join(", ") + ')';
                             }
@@ -203,10 +203,10 @@ $( document ).ready( function(){
                             return {value: e.name, caption: compoundName, score: e.relevance};
                         });
 
-                        callback(null, list);            
+                        callback(null, list);
                     }
 
-                    
+
         	        //TODO: Close socket on exit actually
         	        //socket.close();
         	    };
@@ -223,7 +223,7 @@ $( document ).ready( function(){
     var newName;
     var newSketchName;
     var myApp = '/src/main/scala/ThreeJSApp.scala';
-    
+
     $('#home-btn').click(function() {
 	    //Escondo y desactivo todo lo demas
         $('#main-menu').children().removeClass("active");
@@ -267,7 +267,7 @@ $( document ).ready( function(){
     var autocompleteReady;
 
     $('#create-sketch').click(function() {
-        autocompleteReady=false;       
+        autocompleteReady=false;
 
         //Important Stuff
         newSketchName = $('#new-sketch-name').val();
@@ -286,17 +286,17 @@ $( document ).ready( function(){
             editor.setValue(data.toString());
         });
 
-        //Start Ensime Server per Sketch (Its ugly, I know)        
+        //Start Ensime Server per Sketch (Its ugly, I know)
         fs.readFile(path.resolve(newName) + '/.ensime',function (err, data) {
 
             //g repalces all instances
             //a-zA-Z0-9- Letter, number, and symbol -
-            
+
             var newData = data.toString().replace(/templates\/[a-zA-Z0-9-]*\//g, "sketches/"+newName+"/")
                                         .replace(/templates\/[a-zA-Z0-9-]*\"/g, "sketches/"+newName+"\"");
 
             fs.writeFileSync(path.resolve(newName) + '/.ensime', newData);
-            
+
             //Escondo y desactivo todo lo demas
             $('#main-menu').children().removeClass("active");
             $('#content').children().hide();
@@ -309,7 +309,7 @@ $( document ).ready( function(){
             $('#autocomplete-progress-bar').show();
 
             startEnsime();
-        });          
+        });
     }
 
     function startSbtProc(){
@@ -407,7 +407,7 @@ $( document ).ready( function(){
             console.log(`[ENSIME] - stderr: ${data}`);
         });
     }
-   
+
     $('#preview').click(function() {
         if(typeof sbtProc !== 'undefined'){
             fs.writeFile(newName+myApp, editor.getValue());
@@ -416,19 +416,19 @@ $( document ).ready( function(){
             $('#preview').hide(500);
             $('#compile-progress-bar').show(500);
             if (previewWin != false) previewWin.minimize();
-        }       
+        }
     });
 
     function loadGallery(){
         fs.readdir('../sketches', function(err, folders){
             $("#gallery-grid").empty();
-            
-            folders.filter(function(f){return fs.statSync('../sketches/' + f).isDirectory();})
-               .forEach(function(folder){
+
+            var sketches = folders.filter(function(f){return fs.statSync('../sketches/' + f).isDirectory();})
+               sketches.forEach(function(folder){
                     var thumbnailPath = '../sketches/' + folder + '/thumbnail.png';
                     try{
                         //Has to be sync or the animation library won't work, it sucks, should check it out.
-                        fs.accessSync(thumbnailPath, fs.F_OK);    
+                        fs.accessSync(thumbnailPath, fs.F_OK);
                     }catch(err){
                         thumbnailPath = 'https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg';
                     }
@@ -437,27 +437,29 @@ $( document ).ready( function(){
                     li.click(function(){
                         newName = '../sketches/' + folder;
                         loadSketch();
-                    });            
+                    });
                 });
 
-            new AnimOnScroll( document.getElementById( 'gallery-grid' ), {
-                minDuration : 0.4,
-                maxDuration : 0.7,
-                viewportFactor : 0.2
-            });
+            if(sketches.length > 0){
+              new AnimOnScroll( document.getElementById( 'gallery-grid' ), {
+                  minDuration : 0.4,
+                  maxDuration : 0.7,
+                  viewportFactor : 0.2
+              });
+            }
         });
     }
 
     function loadExamples(){
         fs.readdir('../examples', function(err, folders){
             $("#examples-grid").empty();
-            
+
             folders.filter(function(f){return fs.statSync('../examples/' + f).isDirectory();})
                .forEach(function(folder){
                     var thumbnailPath = '../examples/' + folder + '/thumbnail.png';
                     try{
                         //Has to be sync or the animation library won't work, it sucks, should check it out.
-                        fs.accessSync(thumbnailPath, fs.F_OK);    
+                        fs.accessSync(thumbnailPath, fs.F_OK);
                     }catch(err){
                         thumbnailPath = 'https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg';
                     }
@@ -466,7 +468,7 @@ $( document ).ready( function(){
                     li.click(function(){
                         newName = '../examples/' + folder;
                         loadSketch();
-                    });            
+                    });
                 });
 
             new AnimOnScroll( document.getElementById( 'examples-grid' ), {
@@ -477,5 +479,3 @@ $( document ).ready( function(){
         });
     }
 });
-                                    
-                                    
