@@ -44,10 +44,9 @@ fi
 if [[ $OS == 'Darwin' ]]; then
   f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
   if [[ "$f" == '0' ]]; then
-      brew install wget
       ((1<<32)) && B='x64' || B='ia32'
       info "Installing NW.js $B"
-      wget -qO- "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-osx-$B.zip" | unzip &
+      curl -sS "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-osx-$B.zip" > nwjs.zip && unzip nwjs.zip && rm nwjs.zip &
       PID_NW=$!
   fi
 fi
