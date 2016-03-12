@@ -42,7 +42,7 @@ if [[ $OS == 'Linux' ]]; then
 fi
 
 if [[ $OS == 'Darwin' ]]; then
-  f=$(ls nwjs-$NWJS_VERSION-linux-* 2>/dev/null | wc -l)
+  f=$(ls nwjs-$NWJS_VERSION-osx-* 2>/dev/null | wc -l)
   if [[ "$f" == '0' ]]; then
       ((1<<32)) && B='x64' || B='ia32'
       info "Installing NW.js $B"
