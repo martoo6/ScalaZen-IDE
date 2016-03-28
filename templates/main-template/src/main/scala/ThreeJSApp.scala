@@ -22,8 +22,6 @@ class ThreeJSApp extends BasicCanvas with DrawingUtils with PerlinNoise{
   val n2 = Simplex(-250,250)
   val n3 = Simplex(-250,250)
 
-  dom.onkeypress = {e:KeyboardEvent => saveImg}
-
   def render():Unit = {
     if(frameCount < 60*10) {
       val size = rand(2,5)
