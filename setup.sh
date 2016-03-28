@@ -170,7 +170,7 @@ CLASSPATH_LOG="$RESOLUTION_DIR/sbt.log"
 mkdir -p "ensime-server"
 mkdir -p "$RESOLUTION_DIR"/project
 
-echo 'addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M9")' > "$RESOLUTION_DIR"/project/plugins.sbt
+echo 'addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M10")' > "$RESOLUTION_DIR"/project/plugins.sbt
 
 cat <<EOF > "$RESOLUTION_DIR/build.sbt"
 import sbt._
