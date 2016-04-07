@@ -424,20 +424,22 @@ $( document ).ready( function(){
             $("#gallery-grid").empty();
 
             var sketches = folders.filter(function(f){return fs.statSync('../sketches/' + f).isDirectory();})
-               sketches.forEach(function(folder){
-                    var thumbnailPath = '../sketches/' + folder + '/thumbnail.png';
+               sketches.forEach(function(sketch){
+                    var thumbnailPath = '../sketches/' + sketch + '/thumbnail.png';
                     try{
                         //Has to be sync or the animation library won't work, it sucks, should check it out.
                         fs.accessSync(thumbnailPath, fs.F_OK);
                     }catch(err){
                         thumbnailPath = 'https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg';
                     }
-                    $('#gallery-grid').append('<li id="sketch-' + folder + '"><a href="#"><img src="' + thumbnailPath + '">' + folder + '</a></li>');
-                    var li = $('#sketch-' + folder);
+                    $('#gallery-grid').append(sketchInGalleryHTML(sketch, thumbnailPath));
+                    var li = $('#sketch-' + sketch);
                     li.click(function(){
-                        newName = '../sketches/' + folder;
+                        newName = '../sketches/' + sketch;
                         loadSketch();
-                    });
+                    }).find('.share-btn')
+                      .popover(shareLinkPopoverOptions(sketch))
+                      .click(showShareLinkFor(sketch));
                 });
 
             if(sketches.length > 0){
