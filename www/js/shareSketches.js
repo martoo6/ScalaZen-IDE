@@ -43,7 +43,7 @@ function storeGistAndShow(sketch, $link) {
 function sketchInGalleryHTML(sketchName, thumbnailPath){
     return `<li id="sketch-${sketchName}" class="sketch">
                     <button title="share" class="share-btn" >
-                        <img src="img/share.svg">
+                        <img src="img/share.svg" style="border: 2px solid white">
                     </button>
                     <img src="${thumbnailPath}">
                     <span class="sketch-text">${sketchName}</span>
