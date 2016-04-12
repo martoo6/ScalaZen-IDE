@@ -45,7 +45,7 @@ if [[ $OS == 'Darwin' ]]; then
   if [[ "$f" == '0' ]]; then
       ((1<<32)) && B='x64' || B='ia32'
       info "Installing NW.js $B"
-      curl -sS "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-osx-$B.zip" > nwjs.zip && unzip nwjs.zip && rm nwjs.zip &
+      (curl -sS "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-osx-$B.zip" > nwjs.zip && unzip nwjs.zip && rm nwjs.zip) &
       PID_NW=$!
   fi
 fi
