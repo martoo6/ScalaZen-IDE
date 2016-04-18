@@ -5,33 +5,3 @@
 .sketch{
     cursor: pointer;
 }
-
-.share-btn > img:hover {
-    background-color: lightblue;
-}
-
-.share-btn{
-    position: absolute;
-    background-color:transparent;
-    width: 15%;
-    height: 20%;
-    outline: 0;
-    border:0;
-}
-
-.share-btn > img{
-    background: #C0C7CF;
-    display: inline;
-    border-radius: 50%;
-}
-
-.share-link{
-    border-style: ridge;
-    background-color: #e7e7e7;
-    padding: 3px 15px 3px 15px;
-    border-radius: 4px;
-}
-
-.sketch > .popover{
-    max-width: none;
-}
