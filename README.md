@@ -4,12 +4,18 @@ ScalaZen IDE, make visual WebGL Apps with Scala and ScalaZen lib (Based on Three
 
 ## Mac OS Pre-Requisites
 ```
-# Install Java 6 or higher and set JAVA_HOME enviroment variable
+Install Java 6 or higher and set JAVA_HOME enviroment variable
+```
+
+## Download
+```
+We don't have bundled versions for each platform yet. In the meantime you can clone this repository
+$ git clone https://github.com/martoo6/ScalaZen-IDE.git
 ```
 
 ## Installing
 ```
-# ./setup.sh
+$ ./setup.sh
 ```
 
 ## Launching
