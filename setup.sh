@@ -7,6 +7,7 @@ SBT_PLUGINS="$HOME/.sbt/0.13/plugins"
 SBT_PLUGINS_FILE="$SBT_PLUGINS/plugins.sbt"
 CURRENT_DIR="$(pwd -P)"
 INSTALL_LOG="$CURRENT_DIR/install.log"
+PATH=$PATH:$(readlink -f .)
 
 info(){
     echo "[-] $@"
@@ -60,14 +61,25 @@ if [[ $OS == 'Windows' ]]; then
   fi
 fi
 
+((1<<32)) && ARQ='x64' || ARQ='i586'
 export JDK_HOME="$JAVA_HOME"
 JAVA="$JAVA_HOME/bin/java"
-if [ ! -x "$JAVA" ] ; then
+
+#This is not portable for Mac
+if [[ -f "./jdk-7u80-linux-$ARQ" ]]; then
+    JAVA_HOME=$(readlink -f "jdk-7u80-linux-$ARQ")
+fi
+
+if [[ ! $(which java) ]]; then
+    JAVA_HOME="$(readlink -f $(dirname $(readlink -f $(which java)))/../..)"
+fi
+
+if [[ ! $(which java) ]] && [[ ! -f "./jdk-7u80-linux-$ARQ" ]] ; then
     if [[ $OS == 'Linux' ]]; then
-      info "JAVA_HOME not found. Installing default JDK"
-      sudo apt-get install -y --no-install-recommends default-jdk >>"$INSTALL_LOG"
-      echo "JAVA_HOME=\"/usr/lib/jvm/default-java\"" | sudo tee -a /etc/environment
-      source /etc/environment
+      info "Java not found. Installing oracle JDK"
+      (wget -qO- --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/7u80-b15/jdk-7u80-linux-$ARQ.tar.gz | tar zxf -) &
+      PID_JAVA=$!
+      JAVA_HOME=$(readlink -f "jdk-7u80-linux-$ARQ")
     fi
     if [[ $OS == 'Darwin' ]]; then
       error "You have to download and install Java prior running this script. Remember to configure the JAVA_HOME enviroment variable."
@@ -79,14 +91,15 @@ if [ ! -x "$JAVA" ] ; then
     fi
 fi
 info "Using JDK at $JAVA_HOME"
+PATH=$PATH:$(readlink -f "$JAVA_HOME/bin")
 
-if [[ $(which sbt) ]] || [[ $(which sbt) != 'sbt not found' ]] || [[ -f ./sbt ]]; then
+if [[ $(which sbt) ]] || [[ -f ./sbt ]]; then
   info "SBT already in PATH. Skipping."
 else
   info "SBT not found, installing..."
 
   if [[ $OS == 'Linux' ]]; then
-    curl -s https://raw.githubusercontent.com/paulp/sbt-extras/master/sbt > ./sbt && chmod 0755 ./sbt
+    wget -q https://raw.githubusercontent.com/paulp/sbt-extras/master/sbt && chmod 0755 ./sbt
   fi
 
   if [[ $OS == 'Darwin' ]]; then
@@ -129,6 +142,9 @@ mkdir -p "$SBT_PLUGINS"
 #SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
 #[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
+if [ $PID_JAVA ] ; then
+  wait $PID_JAVA
+fi
 
 info "Installing SBT and Coursier. This will take a while."
 mkdir -p "coursier-dummy-project"

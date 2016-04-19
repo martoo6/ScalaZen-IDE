@@ -3,7 +3,13 @@
 NWJS_VERSION="v0.12.3"
 OS=$(uname -s)
 PATH=$PATH:./
+((1<<32)) && ARQ='x64' || ARQ='i586'
 ((1<<32)) && B='x64' || B='ia32'
+if [[ ! $JAVA_HOME ]]; then
+  JAVA_HOME=$(readlink -f "jdk-7u80-linux-$ARQ")
+fi
+
+
 
 function clean_up {
   if [ -f ensime_pid ]; then
