@@ -27,7 +27,6 @@ if [[ $OS == 'Darwin' ]]; then
   fi
   info "Installing Homebrew utilities"
   brew install coreutils
-  brew install grep --with-default-names
   brew install gnu-sed --with-default-names
 fi
 
@@ -42,11 +41,11 @@ if [[ $OS == 'Linux' ]]; then
 fi
 
 if [[ $OS == 'Darwin' ]]; then
-  f=$(ls nwjs-$NWJS_VERSION-osx-* 2>/dev/null | wc -l)
+  f=$(ls nwjs-$NWJS_VERSION-osx-* 2>/dev/null | wc -l | awk {'print $1'})
   if [[ "$f" == '0' ]]; then
       ((1<<32)) && B='x64' || B='ia32'
       info "Installing NW.js $B"
-      curl -sS "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-osx-$B.zip" > nwjs.zip && unzip nwjs.zip && rm nwjs.zip &
+      (curl -sS "http://dl.nwjs.io/$NWJS_VERSION/nwjs-$NWJS_VERSION-osx-$B.zip" > nwjs.zip && unzip nwjs.zip && rm nwjs.zip) &
       PID_NW=$!
   fi
 fi

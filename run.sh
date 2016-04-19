@@ -24,7 +24,7 @@ if [[ $OS == *"CYGWIN"* ]]; then
 fi
 
 if [[ $OS == 'Darwin' ]]; then
-  ./nwjs-$NWJS_VERSION-osx-$B/nw ./www
+  ./nwjs-$NWJS_VERSION-osx-$B/nwjs.app/Contents/MacOS/nwjs ./www
 fi
 
 if [[ $OS == 'Linux' ]]; then

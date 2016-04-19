@@ -14,7 +14,7 @@
 ENSIME_VERSION="0.9.10-SNAPSHOT"
 
 
-S=$(uname -s)
+OS=$(uname -s)
 if [[ $OS == *"CYGWIN"* ]]; then
   OS="Windows"
 fi

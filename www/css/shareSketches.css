@@ -1,0 +1,44 @@
+/*
+    Styling for the sketch sharing functionally in the gallery
+*/
+
+.share-btn > img:hover {
+    background-color: lightblue;
+}
+
+.share-btn{
+    position: absolute;
+    background-color:transparent;
+    width: 15%;
+    height: 20%;
+    outline: 0;
+    border:0;
+}
+
+.share-btn > img{
+    background: #C0C7CF;
+    display: inline;
+    border-radius: 50%;
+}
+
+.share-link{
+    cursor: pointer;
+    border-style: ridge;
+    background-color: #e7e7e7;
+    padding: 3px 15px 3px 15px;
+    border-radius: 0 4px 4px 0;
+}
+
+.sketch > .popover{
+    max-width: none;
+}
+
+.copy-btn{
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    display: inline-flex;
+}
+
+.share-controls{
+    display: flex;
+}
