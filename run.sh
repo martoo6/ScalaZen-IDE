@@ -2,13 +2,21 @@
 
 NWJS_VERSION="v0.12.3"
 OS=$(uname -s)
-PATH=$PATH:./
-((1<<32)) && ARQ='x64' || ARQ='i586'
+PATH=$PATH:$(readlink -f .)
+
 ((1<<32)) && B='x64' || B='ia32'
+
 if [[ ! $JAVA_HOME ]]; then
-  JAVA_HOME=$(readlink -f "jdk-7u80-linux-$ARQ")
+  if [[ -d "./jdk1.7.0_80" ]]; then
+      JAVA_HOME=$(readlink -f "jdk1.7.0_80")
+  fi
+
+  if [[ $(which java) ]]; then
+      JAVA_HOME="$(readlink -f $(dirname $(readlink -f $(which java)))/../..)"
+  fi
 fi
 
+PATH=$PATH:$(readlink -f "$JAVA_HOME/bin")
 
 
 function clean_up {
