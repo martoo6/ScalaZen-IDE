@@ -66,20 +66,20 @@ export JDK_HOME="$JAVA_HOME"
 JAVA="$JAVA_HOME/bin/java"
 
 #This is not portable for Mac
-if [[ -f "./jdk-7u80-linux-$ARQ" ]]; then
-    JAVA_HOME=$(readlink -f "jdk-7u80-linux-$ARQ")
+if [[ -d "./jdk1.7.0_80" ]]; then
+    JAVA_HOME=$(readlink -f "jdk1.7.0_80")
 fi
 
-if [[ ! $(which java) ]]; then
+if [[ $(which java) ]]; then
     JAVA_HOME="$(readlink -f $(dirname $(readlink -f $(which java)))/../..)"
 fi
 
-if [[ ! $(which java) ]] && [[ ! -f "./jdk-7u80-linux-$ARQ" ]] ; then
+if [[ ! $(which java) ]] && [[ ! -d "./jdk1.7.0_80" ]] ; then
     if [[ $OS == 'Linux' ]]; then
       info "Java not found. Installing oracle JDK"
       (wget -qO- --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/7u80-b15/jdk-7u80-linux-$ARQ.tar.gz | tar zxf -) &
       PID_JAVA=$!
-      JAVA_HOME=$(readlink -f "jdk-7u80-linux-$ARQ")
+      JAVA_HOME=$(readlink -f "jdk1.7.0_80")
     fi
     if [[ $OS == 'Darwin' ]]; then
       error "You have to download and install Java prior running this script. Remember to configure the JAVA_HOME enviroment variable."
