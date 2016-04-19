@@ -53,18 +53,19 @@ $( document ).ready( function(){
         //Try to kill spawned processes
         if(typeof socket !== 'undefined'){
             kill(ensime.pid, 'SIGTERM', function(err){
-
+                fs.unlinkSync("../ensime_pid", ensime.pid);
                 console.log("Server Killed");
                 if(typeof sbtProc !== 'undefined'){
                     kill(sbtProc.pid, 'SIGKILL',function(err){
+                        fs.unlinkSync("../sbt_pid", sbtProc.pid);
                         console.log("SBT Killed");
                         gui.App.quit();
                     });
-                }else{
+                } else {
                     gui.App.quit();
                 }
             });
-        }else{
+        } else {
             gui.App.quit();
         }
 
@@ -315,6 +316,7 @@ $( document ).ready( function(){
     function startSbtProc(){
         //sbtProc = spawn("sbt", ["~fastOptJS"],{cwd: path.resolve(newName)});
         sbtProc = spawn("sbt", [],{cwd: path.resolve(newName)});
+        fs.writeFile("../sbt_pid", sbtProc.pid);
         sbtProc.stdin.setEncoding('utf-8');
 
         sbtProc.stdout.on('data', function(data){
@@ -356,6 +358,8 @@ $( document ).ready( function(){
 
     function startEnsime(){
         ensime = spawn("../ensime", [path.resolve(newName) + '/.ensime']);
+        fs.writeFile("../ensime_pid", ensime.pid);
+
         ensime.stdout.on('data', function(ensimeData) {
 
             console.log(`[ENSIME] - stdout: ${ensimeData}`);
