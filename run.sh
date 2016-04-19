@@ -2,6 +2,7 @@
 
 NWJS_VERSION="v0.12.3"
 OS=$(uname -s)
+PATH=$PATH:./
 ((1<<32)) && B='x64' || B='ia32'
 
 function clean_up {

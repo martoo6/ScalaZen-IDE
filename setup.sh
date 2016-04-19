@@ -80,34 +80,23 @@ if [ ! -x "$JAVA" ] ; then
 fi
 info "Using JDK at $JAVA_HOME"
 
-if [[ ! $(which sbt) ]] || [[ $(which sbt) == 'sbt not found' ]]; then
-    info "SBT not in PATH, installing..."
-
-    if [[ $OS == 'Linux' ]]; then
-      if [[ ! -f /etc/apt/sources.list.d/sbt.list ]]; then
-          info "Adding SBT sources list and apt key..."
-          info "deb https://dl.bintray.com/sbt/debian /"
-          echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
-          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823 >/dev/null
-      fi
-      sudo apt-get install -y apt-transport-https >/dev/null
-      info "Updating apt..."
-      sudo apt-get update >/dev/null
-      info "Installing SBT"
-      sudo apt-get install -y sbt >>"$INSTALL_LOG"
-    fi
-
-    if [[ $OS == 'Darwin' ]]; then
-      brew install sbt >>"$INSTALL_LOG"
-    fi
-
-    if [[ $OS == 'Windows' ]]; then
-      error "You have to download and install SBT prior running this script."
-      exit 1
-    fi
-
+if [[ $(which sbt) ]] || [[ $(which sbt) != 'sbt not found' ]] || [[ -f ./sbt ]]; then
+  info "SBT already in PATH. Skipping."
 else
-    info "SBT already in PATH. Skipping."
+  info "SBT not found, installing..."
+
+  if [[ $OS == 'Linux' ]]; then
+    curl -s https://raw.githubusercontent.com/paulp/sbt-extras/master/sbt > ./sbt && chmod 0755 ./sbt
+  fi
+
+  if [[ $OS == 'Darwin' ]]; then
+    brew install sbt >>"$INSTALL_LOG"
+  fi
+
+  if [[ $OS == 'Windows' ]]; then
+    error "You have to download and install SBT prior running this script."
+    exit 1
+  fi
 fi
 
 mkdir -p "$SBT_PLUGINS"
