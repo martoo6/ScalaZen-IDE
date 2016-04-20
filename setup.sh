@@ -90,8 +90,6 @@ if [[ ! $(which java) ]] && [[ ! -d "./jdk1.7.0_80" ]] ; then
       exit 1
     fi
 fi
-info "Using JDK at $JAVA_HOME"
-PATH=$PATH:$(readlink -f "$JAVA_HOME/bin")
 
 if [[ $(which sbt) ]] || [[ -f ./sbt ]]; then
   info "SBT already in PATH. Skipping."
@@ -142,9 +140,14 @@ mkdir -p "$SBT_PLUGINS"
 #SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
 #[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
+
 if [ $PID_JAVA ] ; then
+  info "Waiting for java to finsh download."
   wait $PID_JAVA
 fi
+
+info "Using JDK at $JAVA_HOME"
+PATH=$PATH:$(readlink -f "$JAVA_HOME/bin")
 
 info "Installing SBT and Coursier. This will take a while."
 mkdir -p "coursier-dummy-project"
