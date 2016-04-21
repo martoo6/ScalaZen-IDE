@@ -147,7 +147,27 @@ if [ $PID_JAVA ] ; then
 fi
 
 info "Using JDK at $JAVA_HOME"
-PATH=$PATH:$(readlink -f "$JAVA_HOME/bin")
+
+if [[ $OS == 'Darwin' ]]; then
+  PATH=$PATH:$(greadlink -f "$JAVA_HOME/bin")
+else
+  PATH=$PATH:$(readlink -f "$JAVA_HOME/bin")
+fi
+
+
+f=$(ls ensime_2.11-0.9.10-SNAPSHOT-assembly.jar 2>/dev/null | wc -l)
+if [[ "$f" == '0' ]]; then
+  info "Installing Ensime."
+  if [[ $OS == 'Linux' ]]; then
+        wget -q "http://ensime.typelevel.org/ensime_2.11-0.9.10-SNAPSHOT-assembly.jar" &
+        PID_ENSIME=$!
+  fi
+
+  if [[ $OS == 'Darwin' ]]; then
+        (curl -sS "http://ensime.typelevel.org/ensime_2.11-0.9.10-SNAPSHOT-assembly.jar" > ensime_2.11-0.9.10-SNAPSHOT-assembly.jar) &
+        PID_ENSIME=$!
+  fi
+fi
 
 info "Installing SBT and Coursier. This will take a while."
 mkdir -p "coursier-dummy-project"
@@ -171,52 +191,6 @@ popd &>/dev/null
 
 rm -rf coursier-dummy-project
 
-RESOLUTION_DIR="$(pwd -P)"/ensime-server
-CLASSPATH_FILE="$RESOLUTION_DIR/classpath"
-CLASSPATH_LOG="$RESOLUTION_DIR/sbt.log"
-mkdir -p "ensime-server"
-mkdir -p "$RESOLUTION_DIR"/project
-
-echo 'addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M10")' > "$RESOLUTION_DIR"/project/plugins.sbt
-
-cat <<EOF > "$RESOLUTION_DIR/build.sbt"
-import sbt._
-
-import IO._
-import java.io._
-scalaVersion := "${SCALA_VERSION}"
-ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
-// allows local builds of scala
-resolvers += Resolver.mavenLocal
-resolvers += Resolver.sonatypeRepo("snapshots")
-resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
-resolvers += "Akka Repo" at "http://repo.akka.io/repository"
-resolvers += "Netbeans" at "http://bits.netbeans.org/maven2"
-
-libraryDependencies ++= Seq(
-  "org.ensime" %% "ensime" % "${ENSIME_VERSION}",
-  "org.scala-lang" % "scala-compiler" % scalaVersion.value force(),
-  "org.scala-lang" % "scala-reflect" % scalaVersion.value force(),
-  "org.scala-lang" % "scalap" % scalaVersion.value force()
-)
-val saveClasspathTask = TaskKey[Unit]("saveClasspath", "Save the classpath to a file")
-saveClasspathTask := {
-  val managed = (managedClasspath in Runtime).value.map(_.data.getAbsolutePath)
-  val unmanaged = (unmanagedClasspath in Runtime).value.map(_.data.getAbsolutePath)
-  val out = file("${CLASSPATH_FILE}")
-  write(out, (unmanaged ++ managed).mkString(File.pathSeparator))
-}
-EOF
-
-cat <<EOF > "$RESOLUTION_DIR/project/build.properties"
-sbt.version=0.13.11
-EOF
-
-pushd $RESOLUTION_DIR &>/dev/null
-info "Installing Ensime, log available in $CLASSPATH_LOG. This may take a while..."
-sbt saveClasspath > "$CLASSPATH_LOG" 2>&1
-popd &>/dev/null
-
 
 info "Configuring examples. This may take a while..."
 FOLDS="templates/ examples/"
@@ -234,6 +208,8 @@ done
 
 info "Waiting for NW.js to finish download.."
 wait $PID_NW
+info "Waiting for Ensime to finish download.."
+wait $PID_ENSIME
 wait
 
 info "Done!"
