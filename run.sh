@@ -2,7 +2,36 @@
 
 NWJS_VERSION="v0.12.3"
 OS=$(uname -s)
+
+if [[ $OS == 'Darwin' ]]; then
+  PATH=$PATH:$(greadlink -f .)
+else
+  PATH=$PATH:$(readlink -f .)
+fi
+
 ((1<<32)) && B='x64' || B='ia32'
+
+if [[ ! $JAVA_HOME ]]; then
+  #This is not portable for Versions, does it work on mac ?
+  if [[ -d "./jdk1.7.0_80" ]]; then
+      JAVA_HOME=$(readlink -f "jdk1.7.0_80")
+  fi
+
+  if [[ $(which java) ]]; then
+      if [[ $OS == 'Darwin' ]]; then
+        echo "Trying to obtain JAVA_HOME. This may not work."
+        JAVA_HOME="$(greadlink -f $(dirname $(greadlink -f $(which java)))/../..)"
+      else
+        JAVA_HOME="$(readlink -f $(dirname $(readlink -f $(which java)))/../..)"
+      fi
+  fi
+fi
+
+if [[ $OS == 'Darwin' ]]; then
+  PATH=$PATH:$(greadlink -f "$JAVA_HOME/bin")
+else
+  PATH=$PATH:$(readlink -f "$JAVA_HOME/bin")
+fi
 
 function clean_up {
   if [ -f ensime_pid ]; then

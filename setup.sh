@@ -8,6 +8,7 @@ SBT_PLUGINS_FILE="$SBT_PLUGINS/plugins.sbt"
 CURRENT_DIR="$(pwd -P)"
 INSTALL_LOG="$CURRENT_DIR/install.log"
 
+
 info(){
     echo "[-] $@"
 }
@@ -28,6 +29,12 @@ if [[ $OS == 'Darwin' ]]; then
   info "Installing Homebrew utilities"
   brew install coreutils
   brew install gnu-sed --with-default-names
+fi
+
+if [[ $OS == 'Darwin' ]]; then
+  PATH=$PATH:$(greadlink -f .)
+else
+  PATH=$PATH:$(readlink -f .)
 fi
 
 if [[ $OS == 'Linux' ]]; then
@@ -60,14 +67,16 @@ if [[ $OS == 'Windows' ]]; then
   fi
 fi
 
+((1<<32)) && ARQ='x64' || ARQ='i586'
 export JDK_HOME="$JAVA_HOME"
 JAVA="$JAVA_HOME/bin/java"
-if [ ! -x "$JAVA" ] ; then
+
+if [[ ! $(which java) ]] && [[ ! -d "./jdk1.7.0_80" ]] ; then
     if [[ $OS == 'Linux' ]]; then
-      info "JAVA_HOME not found. Installing default JDK"
-      sudo apt-get install -y --no-install-recommends default-jdk >>"$INSTALL_LOG"
-      echo "JAVA_HOME=\"/usr/lib/jvm/default-java\"" | sudo tee -a /etc/environment
-      source /etc/environment
+      info "Java not found. Installing oracle JDK"
+      (wget -qO- --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/7u80-b15/jdk-7u80-linux-$ARQ.tar.gz | tar zxf -) &
+      PID_JAVA=$!
+      JAVA_HOME=$(readlink -f "jdk1.7.0_80")
     fi
     if [[ $OS == 'Darwin' ]]; then
       error "You have to download and install Java prior running this script. Remember to configure the JAVA_HOME enviroment variable."
@@ -78,36 +87,40 @@ if [ ! -x "$JAVA" ] ; then
       exit 1
     fi
 fi
-info "Using JDK at $JAVA_HOME"
 
-if [[ ! $(which sbt) ]] || [[ $(which sbt) == 'sbt not found' ]]; then
-    info "SBT not in PATH, installing..."
+if [[ ! $JAVA_HOME ]]; then
+  #This is not portable for Versions, does it work on mac ?
+  if [[ -d "./jdk1.7.0_80" ]]; then
+      JAVA_HOME=$(readlink -f "jdk1.7.0_80")
+  fi
 
-    if [[ $OS == 'Linux' ]]; then
-      if [[ ! -f /etc/apt/sources.list.d/sbt.list ]]; then
-          info "Adding SBT sources list and apt key..."
-          info "deb https://dl.bintray.com/sbt/debian /"
-          echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
-          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823 >/dev/null
+  if [[ $(which java) ]]; then
+      if [[ $OS == 'Darwin' ]]; then
+        echo "Trying to obtain JAVA_HOME. This may not work."
+        JAVA_HOME="$(greadlink -f $(dirname $(greadlink -f $(which java)))/../..)"
+      else
+        JAVA_HOME="$(readlink -f $(dirname $(readlink -f $(which java)))/../..)"
       fi
-      sudo apt-get install -y apt-transport-https >/dev/null
-      info "Updating apt..."
-      sudo apt-get update >/dev/null
-      info "Installing SBT"
-      sudo apt-get install -y sbt >>"$INSTALL_LOG"
-    fi
+  fi
+fi
 
-    if [[ $OS == 'Darwin' ]]; then
-      brew install sbt >>"$INSTALL_LOG"
-    fi
-
-    if [[ $OS == 'Windows' ]]; then
-      error "You have to download and install SBT prior running this script."
-      exit 1
-    fi
-
+if [[ $(which sbt) ]] || [[ -f ./sbt ]]; then
+  info "SBT already in PATH. Skipping."
 else
-    info "SBT already in PATH. Skipping."
+  info "SBT not found, installing..."
+
+  if [[ $OS == 'Linux' ]]; then
+    wget -q https://raw.githubusercontent.com/paulp/sbt-extras/master/sbt && chmod 0755 ./sbt
+  fi
+
+  if [[ $OS == 'Darwin' ]]; then
+    brew install sbt >>"$INSTALL_LOG"
+  fi
+
+  if [[ $OS == 'Windows' ]]; then
+    error "You have to download and install SBT prior running this script."
+    exit 1
+  fi
 fi
 
 mkdir -p "$SBT_PLUGINS"
@@ -140,6 +153,32 @@ mkdir -p "$SBT_PLUGINS"
 #SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
 #[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
+f=$(ls ensime_2.11-0.9.10-SNAPSHOT-assembly.jar 2>/dev/null | wc -l)
+if [[ "$f" == '0' ]]; then
+  info "Installing Ensime."
+  if [[ $OS == 'Linux' ]]; then
+        wget -q "http://ensime.typelevel.org/ensime_2.11-0.9.10-SNAPSHOT-assembly.jar" &
+        PID_ENSIME=$!
+  fi
+
+  if [[ $OS == 'Darwin' ]]; then
+        (curl -sS "http://ensime.typelevel.org/ensime_2.11-0.9.10-SNAPSHOT-assembly.jar" > ensime_2.11-0.9.10-SNAPSHOT-assembly.jar) &
+        PID_ENSIME=$!
+  fi
+fi
+
+if [ $PID_JAVA ] ; then
+  info "Waiting for java to finsh download."
+  wait $PID_JAVA
+fi
+
+info "Using JDK at $JAVA_HOME"
+
+if [[ $OS == 'Darwin' ]]; then
+  PATH=$PATH:$(greadlink -f "$JAVA_HOME/bin")
+else
+  PATH=$PATH:$(readlink -f "$JAVA_HOME/bin")
+fi
 
 info "Installing SBT and Coursier. This will take a while."
 mkdir -p "coursier-dummy-project"
@@ -163,52 +202,6 @@ popd &>/dev/null
 
 rm -rf coursier-dummy-project
 
-RESOLUTION_DIR="$(pwd -P)"/ensime-server
-CLASSPATH_FILE="$RESOLUTION_DIR/classpath"
-CLASSPATH_LOG="$RESOLUTION_DIR/sbt.log"
-mkdir -p "ensime-server"
-mkdir -p "$RESOLUTION_DIR"/project
-
-echo 'addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M10")' > "$RESOLUTION_DIR"/project/plugins.sbt
-
-cat <<EOF > "$RESOLUTION_DIR/build.sbt"
-import sbt._
-
-import IO._
-import java.io._
-scalaVersion := "${SCALA_VERSION}"
-ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
-// allows local builds of scala
-resolvers += Resolver.mavenLocal
-resolvers += Resolver.sonatypeRepo("snapshots")
-resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
-resolvers += "Akka Repo" at "http://repo.akka.io/repository"
-resolvers += "Netbeans" at "http://bits.netbeans.org/maven2"
-
-libraryDependencies ++= Seq(
-  "org.ensime" %% "ensime" % "${ENSIME_VERSION}",
-  "org.scala-lang" % "scala-compiler" % scalaVersion.value force(),
-  "org.scala-lang" % "scala-reflect" % scalaVersion.value force(),
-  "org.scala-lang" % "scalap" % scalaVersion.value force()
-)
-val saveClasspathTask = TaskKey[Unit]("saveClasspath", "Save the classpath to a file")
-saveClasspathTask := {
-  val managed = (managedClasspath in Runtime).value.map(_.data.getAbsolutePath)
-  val unmanaged = (unmanagedClasspath in Runtime).value.map(_.data.getAbsolutePath)
-  val out = file("${CLASSPATH_FILE}")
-  write(out, (unmanaged ++ managed).mkString(File.pathSeparator))
-}
-EOF
-
-cat <<EOF > "$RESOLUTION_DIR/project/build.properties"
-sbt.version=0.13.11
-EOF
-
-pushd $RESOLUTION_DIR &>/dev/null
-info "Installing Ensime, log available in $CLASSPATH_LOG. This may take a while..."
-sbt saveClasspath > "$CLASSPATH_LOG" 2>&1
-popd &>/dev/null
-
 
 info "Configuring examples. This may take a while..."
 FOLDS="templates/ examples/"
@@ -226,6 +219,8 @@ done
 
 info "Waiting for NW.js to finish download.."
 wait $PID_NW
+info "Waiting for Ensime to finish download.."
+wait $PID_ENSIME
 wait
 
 info "Done!"

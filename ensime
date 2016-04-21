@@ -21,8 +21,10 @@ fi
 
 if [[ $OS == 'Darwin' ]]; then
   ENSIME_CONFIG=`greadlink -f $1`
+  ENSIME_JAR=$(greadlink -f ../ensime_2.11-0.9.10-SNAPSHOT-assembly.jar)
 else
   ENSIME_CONFIG=`readlink -f $1`
+  ENSIME_JAR=$(readlink -f ../ensime_2.11-0.9.10-SNAPSHOT-assembly.jar)
 fi
 
 
@@ -30,7 +32,7 @@ if [ ! -f "$ENSIME_CONFIG" ] ; then
     echo "No .ensime provided"
     exit 1
 fi
-echo "Reading ENSIME ${ENSIME_VERSION} config from $ENSIME_CONFIG"
+echo "Reading ENSIME config from $ENSIME_CONFIG using $ENSIME_JAR as server"
 
 # rock solid implementation of Greenspun's tenth rule
 # @param the property to extract (assumed to be unique)
@@ -49,7 +51,10 @@ fi
 echo "  -> Using JDK at $JAVA_HOME"
 
 JAVA_FLAGS=`sexp_prop java-flags`
-echo "  -> Using flags $JAVA_FLAGS"
+#echo "  -> Using flags $JAVA_FLAGS"
+# Should check which java flags are compatible with your jvm in order to prevent crash
+echo "  -> Ignoring java flags"
+
 
 export ENSIME_CACHE=`sexp_prop cache-dir`
 mkdir -p "$ENSIME_CACHE" > /dev/null
@@ -66,9 +71,14 @@ RESOLUTION_DIR=`pwd -P`/../ensime-server
 CLASSPATH_FILE="$RESOLUTION_DIR/classpath"
 CLASSPATH_LOG="$RESOLUTION_DIR/sbt.log"
 
-CLASSPATH="$JDK_HOME/lib/tools.jar:`cat $CLASSPATH_FILE`"
+TOOLS_CLASSPATH="$JDK_HOME/lib/tools.jar"
+COMPILER_CLASSPATH=$(echo `sexp_prop scala-compiler-jars` | tr ' ' ':')
+
 
 echo "  -> Starting ENSIME"
 cd "$ENSIME_CACHE"
 
-exec "$JAVA" -classpath "$CLASSPATH" $JAVA_FLAGS -Densime.config="$ENSIME_CONFIG" org.ensime.server.Server
+echo "$ENSIME_JAR:$TOOLS_CLASSPATH:$COMPILER_CLASSPATH"
+
+#exec "$JAVA" -cp "$ENSIME_JAR:$TOOLS_CLASSPATH:$COMPILER_CLASSPATH" $JAVA_FLAGS -Densime.config="$ENSIME_CONFIG" org.ensime.server.Server
+exec "$JAVA" -cp "$ENSIME_JAR:$TOOLS_CLASSPATH:$COMPILER_CLASSPATH" -Densime.config="$ENSIME_CONFIG" org.ensime.server.Server
