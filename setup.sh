@@ -140,21 +140,6 @@ mkdir -p "$SBT_PLUGINS"
 #SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
 #[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
-
-if [ $PID_JAVA ] ; then
-  info "Waiting for java to finsh download."
-  wait $PID_JAVA
-fi
-
-info "Using JDK at $JAVA_HOME"
-
-if [[ $OS == 'Darwin' ]]; then
-  PATH=$PATH:$(greadlink -f "$JAVA_HOME/bin")
-else
-  PATH=$PATH:$(readlink -f "$JAVA_HOME/bin")
-fi
-
-
 f=$(ls ensime_2.11-0.9.10-SNAPSHOT-assembly.jar 2>/dev/null | wc -l)
 if [[ "$f" == '0' ]]; then
   info "Installing Ensime."
@@ -167,6 +152,19 @@ if [[ "$f" == '0' ]]; then
         (curl -sS "http://ensime.typelevel.org/ensime_2.11-0.9.10-SNAPSHOT-assembly.jar" > ensime_2.11-0.9.10-SNAPSHOT-assembly.jar) &
         PID_ENSIME=$!
   fi
+fi
+
+if [ $PID_JAVA ] ; then
+  info "Waiting for java to finsh download."
+  wait $PID_JAVA
+fi
+
+info "Using JDK at $JAVA_HOME"
+
+if [[ $OS == 'Darwin' ]]; then
+  PATH=$PATH:$(greadlink -f "$JAVA_HOME/bin")
+else
+  PATH=$PATH:$(readlink -f "$JAVA_HOME/bin")
 fi
 
 info "Installing SBT and Coursier. This will take a while."
