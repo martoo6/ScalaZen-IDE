@@ -7,7 +7,7 @@ SBT_PLUGINS="$HOME/.sbt/0.13/plugins"
 SBT_PLUGINS_FILE="$SBT_PLUGINS/plugins.sbt"
 CURRENT_DIR="$(pwd -P)"
 INSTALL_LOG="$CURRENT_DIR/install.log"
-PATH=$PATH:$(readlink -f .)
+
 
 info(){
     echo "[-] $@"
@@ -29,6 +29,12 @@ if [[ $OS == 'Darwin' ]]; then
   info "Installing Homebrew utilities"
   brew install coreutils
   brew install gnu-sed --with-default-names
+fi
+
+if [[ $OS == 'Darwin' ]]; then
+  PATH=$PATH:$(greadlink -f .)
+else
+  PATH=$PATH:$(readlink -f .)
 fi
 
 if [[ $OS == 'Linux' ]]; then
@@ -65,15 +71,6 @@ fi
 export JDK_HOME="$JAVA_HOME"
 JAVA="$JAVA_HOME/bin/java"
 
-#This is not portable for Mac
-if [[ -d "./jdk1.7.0_80" ]]; then
-    JAVA_HOME=$(readlink -f "jdk1.7.0_80")
-fi
-
-if [[ $(which java) ]]; then
-    JAVA_HOME="$(readlink -f $(dirname $(readlink -f $(which java)))/../..)"
-fi
-
 if [[ ! $(which java) ]] && [[ ! -d "./jdk1.7.0_80" ]] ; then
     if [[ $OS == 'Linux' ]]; then
       info "Java not found. Installing oracle JDK"
@@ -89,6 +86,22 @@ if [[ ! $(which java) ]] && [[ ! -d "./jdk1.7.0_80" ]] ; then
       error "You have to download and install Java prior running this script. Remember to configure the JAVA_HOME enviroment variable."
       exit 1
     fi
+fi
+
+if [[ ! $JAVA_HOME ]]; then
+  #This is not portable for Versions, does it work on mac ?
+  if [[ -d "./jdk1.7.0_80" ]]; then
+      JAVA_HOME=$(readlink -f "jdk1.7.0_80")
+  fi
+
+  if [[ $(which java) ]]; then
+      if [[ $OS == 'Darwin' ]]; then
+        echo "Trying to obtain JAVA_HOME. This may not work."
+        JAVA_HOME="$(greadlink -f $(dirname $(greadlink -f $(which java)))/../..)"
+      else
+        JAVA_HOME="$(readlink -f $(dirname $(readlink -f $(which java)))/../..)"
+      fi
+  fi
 fi
 
 if [[ $(which sbt) ]] || [[ -f ./sbt ]]; then
