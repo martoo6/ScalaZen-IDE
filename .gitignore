@@ -13,9 +13,11 @@ project/boot/
 project/plugins/project/
 
 # Scala-IDE specific
+sbt_pid
+ensime_2.11-0.9.10-SNAPSHOT-assembly.jar
+/lib/ensime_2.11-0.9.10-SNAPSHOT-assembly.jar
 .scala_dependencies
 .worksheet
-
 .directory
 .idea/
 .idea_modules/
