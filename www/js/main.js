@@ -459,7 +459,7 @@ $( document ).ready( function(){
                     }
 
                     $('#examples-grid').append(`
-                        <li id="example-' + folder + '">
+                        <li id="example-${folder}">
                             <a href="#">
                                 <img src="${thumbnailPath}">${folder}
                             </a>
