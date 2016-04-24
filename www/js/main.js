@@ -1,24 +1,18 @@
-
 var fs = require('fs');
 var wrench = require('wrench');
 var path = require('path');
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var kill = require('tree-kill');
-
-
 var gui = require('nw.gui');
 
 var win = gui.Window.get();
 win.showDevTools();
-
-var previewWin=false;
-
+var previewWin = false;
 var sbtProc;
 
 $( document ).ready( function(){
     var callId = 0;
-
     var socket;
     var ensime;
 
@@ -77,8 +71,6 @@ $( document ).ready( function(){
             socket.close();
         }
 
-
-
         //Try to kill spawned processes
         if(typeof ensime !== 'undefined'){
             kill(ensime.pid, 'SIGKILL', function(err){
@@ -104,7 +96,6 @@ $( document ).ready( function(){
     editor.getSession().setMode("ace/mode/scala");
     editor.setDisplayIndentGuides(true);
 
-
     var scalaCompleter = {
         getCompletions: function(editor, session, pos, prefix, callback) {
             if (typeof socket !== 'undefined') {
@@ -126,7 +117,6 @@ $( document ).ready( function(){
                 });
 
         	    socket.send(req);
-
 
         	    socket.onmessage = function (event) {
                     console.log('__________________________________Event Data__________________________________');
@@ -183,8 +173,6 @@ $( document ).ready( function(){
                                     'vec3IntDoubleInt'
                                     ];
 
-
-
                     var jsonData = JSON.parse(event.data)
 
                     if(jsonData.payload.typehint=='CompletionInfoList'){
@@ -206,10 +194,6 @@ $( document ).ready( function(){
 
                         callback(null, list);
                     }
-
-
-        	        //TODO: Close socket on exit actually
-        	        //socket.close();
         	    };
             }
         }
@@ -264,13 +248,13 @@ $( document ).ready( function(){
     });
 
     var prevCount=1;
-
     var autocompleteReady;
 
-    $('#create-sketch').click(function() {
+    $('#create-sketch').on('submit', function(e) {
+        e.preventDefault();
+
         autocompleteReady=false;
 
-        //Important Stuff
         newSketchName = $('#new-sketch-name').val();
         newName = '../sketches/'+newSketchName;
 
@@ -278,6 +262,17 @@ $( document ).ready( function(){
 
         console.log("File Name to Read: "+newName+myApp);
         loadSketch();
+    });
+
+    $('#new-sketch-name').on('invalid', function(){
+        $(this).popover({
+            trigger:"focus",
+            placement:"top",
+            title: "Invalid sketch name",
+            content: "The sketch name must not contain special characters nor spaces"
+        });
+
+        $(this).focus();
     });
 
     function loadSketch(){
@@ -290,18 +285,16 @@ $( document ).ready( function(){
         //Start Ensime Server per Sketch (Its ugly, I know)
         fs.readFile(path.resolve(newName) + '/.ensime',function (err, data) {
 
-            //g repalces all instances
-            //a-zA-Z0-9- Letter, number, and symbol -
+            var sketchName = newName.slice(newName.lastIndexOf('/') + 1, newName.length);
 
             var newData = data.toString().replace(/templates\/[a-zA-Z0-9-]*\//g, "sketches/"+newName+"/")
                                         .replace(/templates\/[a-zA-Z0-9-]*\"/g, "sketches/"+newName+"\"");
 
             fs.writeFileSync(path.resolve(newName) + '/.ensime', newData);
 
-            //Escondo y desactivo todo lo demas
             $('#main-menu').children().removeClass("active");
             $('#content').children().hide();
-            //Muestro lo que quiero
+            $('#sketch-name').text(sketchName);
             $('#code-editor').show(500);
             $('#new-sketch').addClass("active");
             $('#new-sketch-modal').modal('hide');
@@ -314,7 +307,6 @@ $( document ).ready( function(){
     }
 
     function startSbtProc(){
-        //sbtProc = spawn("sbt", ["~fastOptJS"],{cwd: path.resolve(newName)});
         sbtProc = spawn("sbt", [],{cwd: path.resolve(newName)});
         fs.writeFile("../sbt_pid", sbtProc.pid);
         sbtProc.stdin.setEncoding('utf-8');
@@ -377,8 +369,6 @@ $( document ).ready( function(){
                     socket.onclose = function () {
                         console.log('Lost ensime server connection!');
                     };
-
-
                 });
             }
 
@@ -386,20 +376,6 @@ $( document ).ready( function(){
                 autocompleteReady=true;
                 //Show options when server is ready to accept requests
                 $('#autocomplete-progress-bar').hide(500);
-                /*$('#preview').show(500);
-
-                //Open preview window as soon as the server autocomplete is ready for action.
-                previewWin = gui.Window.open(newName + '/index.html', {
-                    focus: true,
-                    toolbar:false,
-                    title: newName + " preview"
-                });
-
-                previewWin.on('close', function() {
-                    this.hide();
-                    previewWin = false;
-                    this.close(true);
-                });*/
             }
 
             if(ensimeData.toString().indexOf('committing index to disk') > -1){
@@ -424,54 +400,72 @@ $( document ).ready( function(){
     });
 
     function loadGallery(){
-        fs.readdir('../sketches', function(err, folders){
-            $("#gallery-grid").empty();
+        $("#gallery-grid").empty();
 
-            var sketches = folders.filter(function(f){return fs.statSync('../sketches/' + f).isDirectory();})
-               sketches.forEach(function(sketch){
-                    var thumbnailPath = '../sketches/' + sketch + '/thumbnail.png';
-                    try{
-                        //Has to be sync or the animation library won't work, it sucks, should check it out.
-                        fs.accessSync(thumbnailPath, fs.F_OK);
-                    }catch(err){
-                        thumbnailPath = 'https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg';
-                    }
-                    $('#gallery-grid').append(sketchInGalleryHTML(sketch, thumbnailPath));
-                    var li = $('#sketch-' + sketch);
-                    li.click(function(){
-                        newName = '../sketches/' + sketch;
-                        loadSketch();
-                    }).find('.share-btn')
-                      .popover(shareLinkPopoverOptions(sketch))
-                      .click(showShareLinkFor(sketch));
-                });
+        fs.readdir('../sketches', function(err, folders){
+            var sketches = folders.filter(function(f){return fs.statSync('../sketches/' + f).isDirectory()});
+
+            sketches.forEach(function(sketch){
+                var thumbnailPath = '../sketches/' + sketch + '/thumbnail.png';
+
+                try{
+                    //Has to be sync or the animation library won't work, it sucks, should check it out.
+                    fs.accessSync(thumbnailPath, fs.F_OK);
+                }
+                catch(err){
+                    thumbnailPath = 'https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg';
+                }
+
+                $('#gallery-grid').append(sketchInGalleryHTML(sketch, thumbnailPath));
+
+                $('#sketch-' + sketch).click(function(){
+                    newName = '../sketches/' + sketch;
+                    loadSketch();
+                }).find('.share-btn')
+                  .popover(shareLinkPopoverOptions(sketch))
+                  .click(showShareLinkFor(sketch));
+            });
 
             if(sketches.length > 0){
-              new AnimOnScroll( document.getElementById( 'gallery-grid' ), {
+                new AnimOnScroll( $('#gallery-grid')[0], {
                   minDuration : 0.4,
                   maxDuration : 0.7,
                   viewportFactor : 0.2
-              });
+                });
+            }
+            else{
+                $("#gallery-grid").html(`
+                    <div class="well">
+                        <strong>The gallery is empty!</strong> Your <i>New Sketch</i>'s will be saved here
+                    </div>`);
             }
         });
     }
 
     function loadExamples(){
-        fs.readdir('../examples', function(err, folders){
-            $("#examples-grid").empty();
+        $("#examples-grid").empty();
 
-            folders.filter(function(f){return fs.statSync('../examples/' + f).isDirectory();})
-               .forEach(function(folder){
+        fs.readdir('../examples', function(err, folders){
+            folders
+                .filter(function(f){return fs.statSync('../examples/' + f).isDirectory();})
+                .forEach(function(folder){
                     var thumbnailPath = '../examples/' + folder + '/thumbnail.png';
+
                     try{
                         //Has to be sync or the animation library won't work, it sucks, should check it out.
                         fs.accessSync(thumbnailPath, fs.F_OK);
                     }catch(err){
                         thumbnailPath = 'https://s-media-cache-ak0.pinimg.com/236x/3c/34/14/3c3414790d7bda08e59062cd0258770a.jpg';
                     }
-                    $('#examples-grid').append('<li id="example-' + folder + '"><a href="#"><img src="' + thumbnailPath + '">' + folder + '</a></li>');
-                    var li = $('#example-' + folder);
-                    li.click(function(){
+
+                    $('#examples-grid').append(`
+                        <li id="example-' + folder + '">
+                            <a href="#">
+                                <img src="' + thumbnailPath + '">${folder}
+                            </a>
+                        </li>`);
+
+                    $('#example-' + folder).click(function(){
                         newName = '../examples/' + folder;
                         loadSketch();
                     });

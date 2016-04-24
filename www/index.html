@@ -20,27 +20,26 @@
   
   <body>
    
-   
-   <!-- Modal -->
-<div class="modal fade" id="new-sketch-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        <h4 class="modal-title" id="myModalLabel">Choose Sketch Name</h4>
-      </div>
-      <div class="modal-body">
-        <input type="text" id="new-sketch-name">
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="create-sketch">Create Sketch</button>
+  <!-- Modal -->
+  <div class="modal fade" id="new-sketch-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+          <h4 class="modal-title" id="myModalLabel">Choose Sketch Name</h4>
+        </div>
+        <form id="create-sketch">
+          <div class="modal-body">
+              <input pattern="\w+" class="form-control" type="text" id="new-sketch-name" placeholder="Your sketch name">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button class="btn btn-primary" type="submit">Create Sketch</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
-</div>
-   
-   
    
     <div class="navbar navbar-default navbar-static-top">
       <div class="container">
@@ -70,8 +69,8 @@
         </div>
       </div>
     </div>
-    <div id="content">
 
+    <div id="content">
       <div class="container" id="home">
         <div class="jumbotron">
           <h1>Welcome to <strong>ScalaZen</strong> !</h1> 
@@ -79,7 +78,7 @@
         </div>
       </div>
       <div class="container" id="gallery">
-        <ul class="grid effect-3" id="gallery-grid">         
+        <ul class="grid effect-3" id="gallery-grid">
         </ul>
       </div>
       <div class="container" id="examples">
@@ -87,9 +86,6 @@
         </ul>
       </div>
         <div class="container" id="code-editor">
-          
-
-
           <div class="row">
             <div class="col-md-2">
               <div class="progress" id="autocomplete-progress-bar">
@@ -112,24 +108,20 @@
             <div class="col-md-10">
               <ul class="nav nav-tabs">
                 <li class="active">
-                  <a href="#">MyApp</a>
-                </li>
-                <li>
-                  <a href="#">+</a>
+                  <a id="sketch-name" href="#">MyApp</a>
                 </li>
               </ul>
-                <div id="editor" style="height: 500px; width: 800px"></div>
-                <div id="commandline" style="position: absolute; bottom: 10px; height: 20px; width: 800px;"></div>
-            </form>
+              <div id="editor" style="height: 500px; width: 800px"></div>
+              <div id="commandline" style="position: absolute; bottom: 10px; height: 20px; width: 800px;"></div>
             </div>
           </div>
         </div>
     </div>
+
     <script src="js/shareSketches.js"></script>
     <script src="js/masonry.pkgd.min.js"></script>
     <script src="js/imagesloaded.js"></script>
     <script src="js/classie.js"></script>
     <script src="js/AnimOnScroll.js"></script>
   </body>
-
 </html>

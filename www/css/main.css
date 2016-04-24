@@ -5,3 +5,11 @@
 .sketch{
     cursor: pointer;
 }
+
+.form-control::-webkit-input-placeholder{
+    color: lightgray;
+}
+
+#preview{
+    margin-bottom: 1em;
+}
