@@ -5,7 +5,7 @@ var path = require('path');
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var kill = require('tree-kill');
-
+var request = require('request');
 
 var gui = require('nw.gui');
 
@@ -335,6 +335,7 @@ $( document ).ready( function(){
                         previewWin = false;
                         this.close(true);
                     });
+                    compressFiles();
                 } else {
                     previewWin.reloadIgnoringCache();
                     previewWin.restore();
@@ -483,5 +484,69 @@ $( document ).ready( function(){
                 viewportFactor : 0.2
             });
         });
+    }
+
+    function concatenateFilesContent(){
+
+      var fastopt;
+      var jsdeps;
+      var launcher;
+
+      console.log(path.resolve(newName) + '/index.html');
+
+      var indexFile = fs.readFileSync(path.resolve(newName) + '/index.html').toString();
+
+      console.log(path.resolve(newName) + '/target/scala-2.11/');
+
+      fs.readdirSync(path.resolve(newName) + '/target/scala-2.11/', function(err, folders){
+          var files = folders.filter(function(f){return fs.statSync('../sketches/' + f).isDirectory();})
+          files.forEach(function(fileName){
+              console.log(fileName);
+              console.log(path.resolve(newName) + '/target/scala-2.11/' + fileName);
+
+              if(fileName.match('/.*-fastopt\.js$/')){
+                fastopt = fs.readFileSync(path.resolve(newName) + '/target/scala-2.11/' + fileName ).toString();
+              }
+              if(fileName.match('/.*-jsdeps\.js$/')){
+                jsdeps = fs.readFileSync(path.resolve(newName) + '/target/scala-2.11/' + fileName ).toString();
+              }
+              if(fileName.match('/.*-launcher\.js$/')){
+                launcher = fs.readFileSync(path.resolve(newName) + '/target/scala-2.11/' + fileName ).toString();
+              }
+            }
+          );
+        }
+      );
+
+      indexFile.replace('/<!-- Include JavaScript dependencies -->[\n].*/', jsdeps);
+      indexFile.replace('/<!-- Include Scala.js compiled code -->[\n].*/', fastopt);
+      indexFile.replace('/<!-- Run main object -->[\n].*/', launcher);
+
+
+      return indexFile;
+    }
+
+    function compressFiles(){
+      fs.writeFileSync(path.resolve(newName) + '/sketch_release.html', concatenateFilesContent());
+      var gzipProc = spawn("gzip", ['sketch_release.html'],{cwd: path.resolve(newName)});
+      gzipProc.stdout.on('data', function(data){
+          console.log(`[GZIP] - stdout: ${data}`);
+      });
+      gzipProc.stderr.on('data', function(data){
+          console.log(`[GZIP] - stderr: ${data}`);
+      });
+      gzipProc.on('exit', function (){
+        var req = request.post("http://scalazen-crashoverload.rhcloud.com/sketches/", function (err, resp, body) {
+          if (err) {
+            console.log("Upload error: " + err);
+          } else {
+            var sketchUrl = "http://scalazen-crashoverload.rhcloud.com/sketches/" + body.sketchName;
+            // Add popup or whatever showing the code.
+          }
+        });
+        var form = req.form();
+        form.append('file', fs.createReadStream(path.resolve(newName) + '/sketch_release.html.gz'));
+      });
+
     }
 });
