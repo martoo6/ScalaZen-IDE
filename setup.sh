@@ -153,8 +153,8 @@ mkdir -p "$SBT_PLUGINS"
 #SBT_PLUGIN='addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")'
 #[[ $(grep -x "$SBT_PLUGIN" "$SBT_PLUGINS_FILE" 2>/dev/null ) ]] || echo "$SBT_PLUGIN" >> "$SBT_PLUGINS_FILE"
 
-f=$(ls ensime_2.11-0.9.10-SNAPSHOT-assembly.jar 2>/dev/null | wc -l)
-if [[ "$f" == '0' ]]; then
+
+if [[ ! -f ensime_2.11-0.9.10-SNAPSHOT-assembly.jar ]]; then
   info "Installing Ensime."
   if [[ $OS == 'Linux' ]]; then
         wget -q "http://ensime.typelevel.org/ensime_2.11-0.9.10-SNAPSHOT-assembly.jar" &
