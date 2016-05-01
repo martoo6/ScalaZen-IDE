@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-  
+
   <head>
     <meta charset="utf-8">
     <title>ScalaZen</title>
@@ -16,10 +16,16 @@
     <script src="js/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/modernizr.custom.js"></script>
+    <!-- Include JavaScript dependencies -->
+<script type="text/javascript" src="./target/scala-2.11/scalajs_template-jsdeps.js"></script>
+<!-- Include Scala.js compiled code -->
+<script type="text/javascript" src="./target/scala-2.11/scalajs_template-fastopt.js"></script>
+<!-- Run main object -->
+<script type="text/javascript" src="./target/scala-2.11/scalajs_template-launcher.js"></script>
   </head>
-  
+
   <body>
-   
+
   <!-- Modal -->
   <div class="modal fade" id="new-sketch-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -40,7 +46,7 @@
       </div>
     </div>
   </div>
-   
+
     <div class="navbar navbar-default navbar-static-top">
       <div class="container">
         <div class="navbar-header">
@@ -72,9 +78,9 @@
 
     <div id="content">
       <div class="container" id="home">
-        <div class="jumbotron">
-          <h1>Welcome to <strong>ScalaZen</strong> !</h1> 
-          <p>Welcome to ScalaZen! Create a <em>new sketch</em> from a template, or go to <em>examples</em> for some inspiration. If this is not your first time on ScalaZen, go to the <em>gallery</em> to reload a previous sketch.</p> 
+        <div class="jumbotron" style="position:absolute; background-color:rgba(255, 255, 255, 0.6); z-index:1; margin:20px; left:0;">
+          <h1>Welcome to <strong>ScalaZen</strong> !</h1>
+          <p>Welcome to ScalaZen! Create a <em>new sketch</em> from a template, or go to <em>examples</em> for some inspiration. If this is not your first time on ScalaZen, go to the <em>gallery</em> to reload a previous sketch.</p>
         </div>
       </div>
       <div class="container" id="gallery">
@@ -82,7 +88,7 @@
         </ul>
       </div>
       <div class="container" id="examples">
-        <ul class="grid effect-3" id="examples-grid">         
+        <ul class="grid effect-3" id="examples-grid">
         </ul>
       </div>
         <div class="container" id="code-editor">
@@ -123,5 +129,18 @@
     <script src="js/imagesloaded.js"></script>
     <script src="js/classie.js"></script>
     <script src="js/AnimOnScroll.js"></script>
+    <script>
+      var app = new ThreeJSApp();
+      App().run(app);
+
+      var canvas = $("canvas")[0];
+      $("body")[0].removeChild(canvas);
+      $("#home")[0].appendChild(canvas)
+
+      canvas.style["top"]=0;
+      canvas.style["left"]=0;
+      canvas.style["z-index"]=0;
+      canvas.style["position"]='fixed';
+    </script>
   </body>
 </html>
