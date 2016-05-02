@@ -210,18 +210,14 @@ $( document ).ready( function(){
     var myApp = '/src/main/scala/ThreeJSApp.scala';
 
     $('#home-btn').click(function() {
-	    //Escondo y desactivo todo lo demas
         $('#main-menu').children().removeClass("active");
         $('#content').children().hide();
-        //Muestro lo que quiero
-        $('#home').show(500);
+        $('#home').show();
     });
 
     $('#gallery-btn').click(function() {
-        //Escondo y desactivo todo lo demas
         $('#main-menu').children().removeClass("active");
         $('#content').children().hide();
-        //Muestro lo que quiero
         $('#gallery-btn').addClass("active");
         $('#code-editor').hide();
         $('#examples').hide();
@@ -233,10 +229,8 @@ $( document ).ready( function(){
     });
 
     $('#examples-btn').click(function() {
-        //Escondo y desactivo todo lo demas
         $('#main-menu').children().removeClass("active");
         $('#content').children().hide();
-        //Muestro lo que quiero
         $('#examples-btn').addClass("active");
         $('#code-editor').hide();
         $('#gallery').hide();
