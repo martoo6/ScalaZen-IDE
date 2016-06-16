@@ -8,8 +8,8 @@ import scala.scalajs.js.JSApp
  */
 
 @JSExport
-class ThreeJSApp extends BasicCanvas with DrawingUtils with PerlinNoise{
-  Setup._2D.LeftBottom.asScene.withStats
+class ThreeJSApp extends BasicCanvas with DrawingUtils with SimplexNoise with StatsDisplay {
+  Setup._2D.LeftBottom.asScene
 
 
   val data = for{

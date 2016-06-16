@@ -1,5 +1,5 @@
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.7")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.9")
 
-addSbtPlugin("com.github.alexarchambault" % "coursier-sbt-plugin" % "1.0.0-M10")
+addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-M12")
 
-addSbtPlugin("org.ensime" % "ensime-sbt" % "0.4.0")
+addSbtPlugin("org.ensime" % "sbt-ensime" % "0.5.1")

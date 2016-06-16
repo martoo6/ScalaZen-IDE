@@ -14,12 +14,12 @@ import scala.scalajs.js.JSApp
  */
 
 @JSExport
-class ThreeJSApp extends BasicCanvas with DrawingUtils with PerlinNoise{
+class ThreeJSApp extends BasicCanvas with DrawingUtils with SimplexNoise with StatsDisplay {
 
-   Setup._2D.LeftBottom.asCanvas.noClear.withStats.antialiasing
+   Setup._2D.LeftBottom.asCanvas.antialiasing
   RectMode.leftBottom
 
-  val perlin = Perlin(-15,15)
+  val perlin = Simplex(-15,15)
 
   val circles = (0 to 1000).map{ i=>
     circle(random2D, 5, Palette.iDemandPancake.getRandom)

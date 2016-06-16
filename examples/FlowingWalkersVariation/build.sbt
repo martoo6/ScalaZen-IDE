@@ -2,13 +2,15 @@ name := "ScalaJS_Template"
 
 version := "1.0"
 
-scalaVersion  := "2.11.7"
+scalaVersion  := "2.11.8"
 
 enablePlugins(ScalaJSPlugin)
 
-libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.0"
+resolvers += "ScalaZen Repo" at "http://nexus-fakevyral.rhcloud.com/nexus/content/repositories/releases/"
 
-//ScalaJSKeys.jsDependencies += scala.scalajs.sbtplugin.RuntimeDOM
+libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.1"
+
+libraryDependencies += "scalazen" %%% "scalazen" % "1.0.0"
 
 skip in packageJSDependencies := false
 

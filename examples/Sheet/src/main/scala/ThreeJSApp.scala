@@ -8,8 +8,8 @@ import scala.scalajs.js.JSApp
  */
 
 @JSExport
-class ThreeJSApp extends BasicCanvas with DrawingUtils with PerlinNoise{
-  Setup._3D.Center.asScene.noClear.withStats.withControls
+class ThreeJSApp extends BasicCanvas with DrawingUtils with SimplexNoise with StatsDisplay with CameraControls{
+  Setup._3D.Center.asScene
 
   addHemisphereLight(0xFFFFFF, 0x05F5F5, 1.0)
   addDirectionalLight(0xFFFFFF, 0.4, (0,1,0)).target.lookAt(center)

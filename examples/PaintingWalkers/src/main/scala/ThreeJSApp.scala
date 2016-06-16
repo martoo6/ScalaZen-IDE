@@ -9,9 +9,9 @@ import scala.scalajs.js.JSApp
  */
 
 @JSExport
-class ThreeJSApp extends BasicCanvas with DrawingUtils with PerlinNoise{
+class ThreeJSApp extends BasicCanvas with DrawingUtils with SimplexNoise with StatsDisplay {
 
-  Setup._2D.LeftBottom.asCanvas.noClear.withStats.antialiasing
+  Setup._2D.LeftBottom.asCanvas.antialiasing
   RectMode.leftBottom
 
 

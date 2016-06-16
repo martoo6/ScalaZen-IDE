@@ -12,8 +12,8 @@ import scala.scalajs.js.JSApp
  */
 
 @JSExport
-class ThreeJSApp extends BasicCanvas with DrawingUtils with SimplexNoise {
-  Setup._2D.asScene.withStats.withControls
+class ThreeJSApp extends BasicCanvas with DrawingUtils with SimplexNoise with StatsDisplay with CameraControls{
+  Setup._2D.asScene
 
   val radius = 100
 
